@@ -19,7 +19,8 @@ Related
 
 * mac-ssh-confirm_: Protect against SSH Agent Hijacking on Mac OS X with the
   ability to confirm agent identities prior to each use
-* gacli_: Mac CLI Google Authenticator client
+* gacli_: Mac CLI Google Authenticator client (ex. for use with SSH Bastions
+  that utilize Google Authenticator)
 
 .. _mac-ssh-confirm: https://github.com/TimZehta/mac-ssh-confirm
 .. _gacli: https://github.com/ClockworkNet/gacli
