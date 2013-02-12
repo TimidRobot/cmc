@@ -31,7 +31,8 @@ Section: # Global Defaults
 --------------------------
 
 The global defaults for all hosts is specified last. Its parameters apply if
-they are not previously defined. ::
+they are not previously defined (which is why it should be the *last* section
+of your SSH config). ::
 
     # global defaults
     Host *
@@ -48,9 +49,10 @@ they are not previously defined. ::
 4. ``ServerAliveCountMax 6``
 5. ``ServerAliveInterval 10``
 
-Additionally, the following defaults are important. They are not in the config
-because the default value is appropriate. They need to be acknowledged so that
-they are not unintentionally superceded by a configured parameter:
+Additionally, the following defaults are important. The parameter is not in
+this section because the default value is appropriate. It should be
+acknowledged so that it is not unintentionally superseded by a configured
+parameter:
 
 6. ``ForwardAgent no`` specifies that the authentication agent will **not** be
    forwarded. This prevents administrators on untrusted remote servers from
@@ -114,7 +116,7 @@ provides access to servers behind a firewall. ::
      This means you will be able to connect to those servers without a
      password.
 
-5. ``ControlMaster auto`` indicatest SSH should listen for connections on a
+5. ``ControlMaster auto`` indicates SSH should listen for connections on a
    control socket. Additional sessions can connect to this socket and reuse
    the master instances (bastion's) network connection rather than initiating
    a new one.
@@ -138,8 +140,8 @@ provides access to servers behind a firewall.
 
 1. ``# production`` is a comment. It helps provide context for for the
    line that follows it.
-2. ``Host prod production prod*.example.com`` indicates the host pattterns that
-   the subsequent paramters apply to. All of the following will work to connect
+2. ``Host prod production prod*.example.com`` indicates the host patterns that
+   the subsequent parameters apply to. All of the following will work to connect
    to the configured HostName:
 
    - ``ssh prod``
@@ -168,6 +170,9 @@ References
 ==========
 
 - `ssh_config(5) OS X Manual Page`_
+- `SSH Agent Hijacking`_
 
 .. _`ssh_config(5) OS X Manual Page`:
    https://developer.apple.com/library/mac/#documentation/Darwin/Reference/ManPages/man5/ssh_config.5.html
+.. _SSH Agent Hijacking:
+   http://www.clockwork.net/blog/2012/09/28/602/ssh_agent_hijacking

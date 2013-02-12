@@ -8,7 +8,7 @@ connections
 Workflow
 ========
 
-See `docs/workflow.rst`_
+**See `docs/workflow.rst`_**
 
 .. _`docs/workflow.rst`: docs/workflow.rst
 
