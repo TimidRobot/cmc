@@ -8,9 +8,10 @@ connections
 Workflow
 ========
 
-**See `docs/workflow.rst`_**
+**See** |workflow|_
 
-.. _`docs/workflow.rst`: docs/workflow.rst
+.. |workflow| replace:: **docs/workflow.rst**
+.. _workflow: docs/workflow.rst
 
 
 Related
