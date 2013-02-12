@@ -1,3 +1,7 @@
+**NOTE: the mcc script has yet been included in the repository.**
+
+**This project currently consists only of documentation.**
+
 mcc
 ===
 
