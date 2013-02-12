@@ -27,41 +27,6 @@ Example SSH Config
         ServerAliveInterval 10
 
 
-Section: # Global Defaults
---------------------------
-
-The global defaults for all hosts is specified last. Its parameters apply if
-they are not previously defined (which is why it should be the *last* section
-of your SSH config). ::
-
-    # global defaults
-    Host *
-        User arthur
-        ForwardAgent no
-        ServerAliveCountMax 6
-        ServerAliveInterval 10
-
-1. ``# global defaults`` is a comment. It helps provide context for for the
-   line that follows it.
-2. ``Host *`` indicates this is the global defaults section.
-3. ``User arthur`` specifies the user to log in as (remember, in our example
-   the local username is arthurdent).
-4. ``ServerAliveCountMax 6`` helps ensure robust proxied sessions. See
-   `ssh_config(5) OS X Manual Page`_ if you are really curious.
-5. ``ServerAliveInterval 10``  helps ensure robust proxied sessions. See
-   `ssh_config(5) OS X Manual Page`_ if you are really curious.
-
-Additionally, the following defaults are important. The parameter is not in
-this section because the default value is appropriate. It should be
-acknowledged so that it is not unintentionally superseded by a configured
-parameter:
-
-6. ``ForwardAgent no`` specifies that the authentication agent will **not** be
-   forwarded. This prevents administrators on untrusted remote servers from
-   masquerading as you on *any* system on which you have your SSH public key.
-   See `SSH Agent Hijacking`_ for more information.
-
-
 Section: # insecure
 -------------------
 
@@ -83,6 +48,15 @@ do not trust the administrators--those with root access). ::
 
 3. ``HostName insecure.example.com`` specifies the real host name to log into.
 
+Additionally, the following defaults are important. The parameter is not in
+this section because the default value is appropriate. It should be
+acknowledged so that it is not unintentionally superseded by a configured
+parameter:
+
+4. ``ForwardAgent no`` specifies that the authentication agent will **not** be
+   forwarded. This prevents administrators on untrusted remote servers from
+   masquerading as you on *any* system on which you have your SSH public key.
+   See `SSH Agent Hijacking`_ for more information.
 
 
 Section: # bastion
@@ -163,6 +137,41 @@ provides access to servers behind a firewall.
      bastion server as a proxy. Any SSH client (ex. ssh command line, svn,
      Transmit) will see the production session as a single connection. It
      just works!
+
+
+Section: # global defaults
+--------------------------
+
+The global defaults for all hosts is specified last. Its parameters apply if
+they are not previously defined (which is why it should be the *last* section
+of your SSH config). ::
+
+    # global defaults
+    Host *
+        User arthur
+        ForwardAgent no
+        ServerAliveCountMax 6
+        ServerAliveInterval 10
+
+1. ``# global defaults`` is a comment. It helps provide context for for the
+   line that follows it.
+2. ``Host *`` indicates this is the global defaults section.
+3. ``User arthur`` specifies the user to log in as (remember, in our example
+   the local username is arthurdent).
+4. ``ServerAliveCountMax 6`` helps ensure robust proxied sessions. See
+   `ssh_config(5) OS X Manual Page`_ if you are really curious.
+5. ``ServerAliveInterval 10``  helps ensure robust proxied sessions. See
+   `ssh_config(5) OS X Manual Page`_ if you are really curious.
+
+Additionally, the following defaults are important. The parameter is not in
+this section because the default value is appropriate. It should be
+acknowledged so that it is not unintentionally superseded by a configured
+parameter:
+
+6. ``ForwardAgent no`` specifies that the authentication agent will **not** be
+   forwarded. This prevents administrators on untrusted remote servers from
+   masquerading as you on *any* system on which you have your SSH public key.
+   See `SSH Agent Hijacking`_ for more information.
 
 
 References
