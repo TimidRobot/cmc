@@ -46,8 +46,10 @@ of your SSH config). ::
 2. ``Host *`` indicates this is the global defaults section.
 3. ``User arthur`` specifies the user to log in as (remember, in our example
    the local username is arthurdent).
-4. ``ServerAliveCountMax 6``
-5. ``ServerAliveInterval 10``
+4. ``ServerAliveCountMax 6`` helps ensure robust proxied sessions. See
+   `ssh_config(5) OS X Manual Page`_ if you are really curious.
+5. ``ServerAliveInterval 10``  helps ensure robust proxied sessions. See
+   `ssh_config(5) OS X Manual Page`_ if you are really curious.
 
 Additionally, the following defaults are important. The parameter is not in
 this section because the default value is appropriate. It should be
@@ -58,9 +60,6 @@ parameter:
    forwarded. This prevents administrators on untrusted remote servers from
    masquerading as you on *any* system on which you have your SSH public key.
    See `SSH Agent Hijacking`_ for more information.
-
-.. _SSH Agent Hijacking:
-   http://www.clockwork.net/blog/2012/09/28/602/ssh_agent_hijacking
 
 
 Section: # insecure
