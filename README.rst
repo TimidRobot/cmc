@@ -11,7 +11,7 @@ the following benefits:
     the SSH Bastion (see workflow_).
 
 - Sessions to or through ControlMaster hosts do not need to create a new
-  connection (most people will enjoy faster SSH)
+  connection (SSH will be faster for most tasks)
 
 Script Help
 -----------
@@ -38,6 +38,12 @@ Script Help
 
     Notes:
         * Any unopened sockets in ~/.ssh/ are removed with -l and -X
+
+
+Install
+=======
+
+Download ``mcc`` and ensure it is in your ``PATH``.
 
 
 Workflow
