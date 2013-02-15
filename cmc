@@ -50,7 +50,7 @@ action_check_set() {
     _action=${1}
     if [[ -n "${action:-}" ]] && [[ "${action}" != "${_action}" ]]
     then
-        _msg="ERROR: more than one options ('-${Option}' and '-${opt:-}')"
+        _msg="more than one options ('-${Option}' and '-${opt:-}')"
         _msg="${_msg} specified"
         error_exit "${_msg}" 2
     else
@@ -58,17 +58,6 @@ action_check_set() {
         opt=${Option}
     fi
     return 0
-}
-
-
-cleanSocket() {
-    # Remove stale socket
-    local _socket="${1}"
-    {
-        echo 'ERROR: Stale ControlMaster connection socket'
-        echo "       Removing: ${_socket}"
-        rm -f "${_socket}"
-    } 1>&2
 }
 
 
@@ -95,7 +84,7 @@ error_exit() {
     local _es _msg
     _msg=${1}
     _es=${2:-1}
-    echo "${_msg}" 1>&2
+    echo "ERROR: ${_msg}" 1>&2
     exit ${_es}
 }
 
@@ -188,7 +177,7 @@ session_exit_all() {
                 session_exit ${_host} "${_socket}"
             else
                 _es=4
-                cleanSocket ${_socket}
+                socket_clean ${_socket}
             fi
             _i=$(( ++_i ))
         done
@@ -204,7 +193,6 @@ session_open() {
     if session_check ${_host} &> /dev/null
     then
         {
-            echo -n 'ERROR - '
             echo "${_host} - ControlMaster connection already open"
             session_check ${_host} | tail -n 1
         } 1>&2
@@ -223,6 +211,18 @@ session_open() {
             return ${_es}
         fi
     fi
+    return 0
+}
+
+
+socket_clean() {
+    # Remove stale socket
+    local _socket="${1}"
+    {
+        echo 'ERROR: Stale ControlMaster connection socket'
+        echo "       Removing: ${_socket}"
+        rm -f "${_socket}"
+    } 1>&2
 }
 
 
@@ -233,7 +233,7 @@ sockets_list() {
     _sockets=$(find ~/.ssh -type s)
     if [[ -z "${_sockets}" ]]
     then
-        echo 'No ControlMaster connections sockets found.'
+        echo 'No ControlMaster connections sockets found.' 1>&2
         exit 0
     else
         _i=0
@@ -253,7 +253,7 @@ sockets_list() {
                 echo "${_check}"
                 echo "  Socket: ${_socket}"
             else
-                cleanSocket ${_socket}
+                socket_clean ${_socket}
                 _es=3
             fi
             _i=$(( _i + 1 ))
@@ -287,16 +287,15 @@ do
         * )
             if [[ "${OPTARG}" =~ ^[cox]$ ]]
             then
-                msg="ERROR: option '-${OPTARG}' requires HOST argument"
-                error_exit "${msg}" 2
+                error_exit "option '-${OPTARG}' requires HOST argument" 2
             fi
-            error_exit "ERROR: Invalid option: -${OPTARG}" 2
+            error_exit "Invalid option: -${OPTARG}" 2
             ;;
     esac
 done
 shift $((${OPTIND} - 1))
 
-case "${action}" in
+case "${action:-}" in
     # Check HOST ControlMaster connection status
     'check' )
         for _host in ${hosts}
@@ -326,28 +325,20 @@ case "${action}" in
     'open' )
         for _host in ${hosts}
         do
-            if session_check ${_host} &> /dev/null
-            then
-                echo "${_host} - ControlMaster connection already open"
-            else
-                session_open ${_host}
-            fi
+            session_open ${_host}
         done
         ;;
    # Open all ControlMasters defined in ${ssh_config}
     'open_all' )
         for _host in $(config_hosts_list)
         do
-            if session_check ${_host} &> /dev/null
-            then
-                echo "${_host} - ControlMaster connection already open"
-            else
-                session_open ${_host}
-            fi
+            session_open ${_host}
         done
         ;;
      # List ControlMaster connection sockets in ~/.ssh/
     'sockets' )
         sockets_list || exit ${?}
         ;;
+    *)
+        error_exit 'orphaned argument(s)--no options were specified' 2
  esac
