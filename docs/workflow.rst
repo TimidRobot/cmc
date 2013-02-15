@@ -61,15 +61,14 @@ Workflow
 
 1. Establish control sessions at the start of your day/session/etc.
 
-   - ``mcc bastion``
+   - ``cmc bastion``
    - This establishes a control master connection in the background. It will
      stay connected and available until it is closed or connectivity is lost.
 
 2. Connect "directly" to hosts behind the firewall using bastion as a proxy
 
    - ``ssh prod``
-   - Since ``mcc`` was already used to put a session to bastion in the
-     background, it is reused.
+   - Uses the connection already in place when it proxies through bastion!
 
 
 References

@@ -1,12 +1,28 @@
-**NOTE: the mcc script has yet been included in the repository.**
-
-**This project currently consists only of documentation.**
-
-mcc
+cmc
 ===
 
-Master Connection Controller - Eases management of SSH ControlMaster
-connections
+::
+
+    Usage:  cmc [ -c HOST | -o HOST | -x HOST ]
+            cmc [ -L | -l | -O | -X ]
+            cmc -h
+
+    ControlMaster Controller - Eases management of SSH ControlMaster connections
+
+    Options:
+        -h      show this help message and exit
+        -c HOST check HOST ControlMaster connection status (maybe specified more
+                than once)
+        -L      list ControlMasters defined in SSH_CONFIG
+        -l      list ControlMaster connection sockets in ~/.ssh/ and check their
+                connection status
+        -O      open all ControlMasters defined in SSH_CONFIG
+        -o HOST open a ControlMaster session (maybe specified more than once)
+        -x HOST close ControlMaster session (maybe specified more than once)
+        -X      exit all ControlMaster connections with sockets in ~/.ssh/
+
+    Notes:
+        * Any unopened sockets in ~/.ssh/ are removed with -l and -X
 
 
 Workflow
@@ -33,8 +49,14 @@ Related
 Requirements
 ============
 
-- OpenSSH SSH client (remote login program)
-- (Mac OS X Mountain Lion recommended)
+- \*nix Operating System with the GNU Bourne-Again SHell (``bash``) and core
+  utilities:
+
+  - ``awk``
+  - ``find``
+  - ``grep``
+  - ``sed``
+  - ``ssh``
 
 
 License
