@@ -6,11 +6,19 @@ Assumptions
 ===========
 1. You're using Mac OS X
 
-   - This is not a requirement. It only impacts the portions that reference
-     the Mac Keychain.
+   - This is not a requirement. The ``cmc`` script should work on any \*nix.
 
 2. You have already created a SSH key pair and added the secret key to your
    Mac keychain.
+
+   - Test to see currently available keys:
+
+     A. ``ssh-add -L``
+
+   - SSH key pair creation example:
+
+     A. ``ssh-keygen -b 4096 -C USERNAME@COMPUTER_DESC``
+     B. ``ssh-add -K``
 
 3. Your name is Arthur Dent
 

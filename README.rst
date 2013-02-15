@@ -1,6 +1,21 @@
 cmc
 ===
 
+``cmc`` makes SSH ControlMaster sessions easy. SSH ControlMaster sessions have
+the following benefits:
+
+- When using a SSH Bastion, you will only be prompted for (two-factor)
+  authentication once.
+
+  - Hosts behind the SSH Bastion can be accessed "directly" by proxying through
+    the SSH Bastion (see workflow_).
+
+- Sessions to or through ControlMaster hosts do not need to create a new
+  connection (most people will enjoy faster SSH)
+
+Script Help
+-----------
+
 ::
 
     Usage:  cmc [ -c HOST | -o HOST | -x HOST ]
@@ -56,7 +71,7 @@ Requirements
   - ``find``
   - ``grep``
   - ``sed``
-  - ``ssh``
+  - ``ssh`` (OpenSSH 4.0 or later)
 
 
 License
