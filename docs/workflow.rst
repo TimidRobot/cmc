@@ -1,6 +1,11 @@
+********
+Workflow
+********
+
 SSH is a powerful tool. When configured correctly it should not only provide
 excellent security, it should also make your work *easier* and
 *more convenient*.
+
 
 Assumptions
 ===========
