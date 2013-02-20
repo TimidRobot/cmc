@@ -46,13 +46,24 @@ Install
 Download ``mcc`` and ensure it is in your ``PATH``.
 
 
+Documentation
+=============
+
 Workflow
-========
+--------
 
 **See** |workflow|_
 
 .. |workflow| replace:: **docs/workflow.rst**
 .. _workflow: docs/workflow.rst
+
+Annotated SSH Configuration
+---------------------------
+
+**See** |annotated_config|_
+
+.. |annotated_config| replace:: **docs/annotated_config.rst**
+.. _annotated_config: docs/annotated_config.rst
 
 
 Related
@@ -70,14 +81,11 @@ Related
 Requirements
 ============
 
-- \*nix Operating System with the GNU Bourne-Again SHell (``bash``) and core
-  utilities:
+- \*nix Operating System with
 
-  - ``awk``
-  - ``find``
-  - ``grep``
-  - ``sed``
-  - ``ssh`` (OpenSSH 4.0 or later)
+  - core utilities (``awk``, ``find``, ``grep``, and ``sed``)
+  - GNU Bourne-Again Shell (``bash``)
+  - OpenSSH 4.0 or later (``ssh``)
 
 
 License
