@@ -9,7 +9,7 @@ Example SSH Config
 
     # bastion
     Host bastion bastion.example.com
-        Hostname bastion.example.com
+        HostName bastion.example.com
         ForwardAgent yes
         ControlMaster auto
         ControlPath ~/.ssh/master-%r@%h:%p
@@ -67,7 +67,7 @@ provides access to servers behind a firewall. ::
 
     # bastion
     Host bastion bastion.example.com
-        Hostname bastion.example.com
+        HostName bastion.example.com
         ControlMaster auto
         ControlPath ~/.ssh/master-%r@%h:%p
 

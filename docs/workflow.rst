@@ -41,7 +41,7 @@ Example ``~/.ssh/config`` Configuration
 
     # bastion
     Host bastion bastion.example.com
-        Hostname bastion.example.com
+        HostName bastion.example.com
         ForwardAgent yes
         ControlMaster auto
         ControlPath ~/.ssh/master-%r@%h:%p
