@@ -41,6 +41,17 @@ Options:
 Notes:
     • Any unused sockets in ~/.ssh/ are removed with -l and -X
 "
+syslog_linux=/var/log/syslog
+syslog_darwin=/private/var/log/system.log
+if [[ -f ${syslog_linux} ]]
+then
+    syslog=${syslog_linux}
+    log_opt='-y '
+elif [[ -f ${syslog_darwin} ]]
+then
+    syslog=${syslog_darwin}
+    log_opt='-y '
+fi
 
 #### FUNCTIONS ################################################################
 
@@ -199,15 +210,18 @@ session_open() {
     else
         echo "${_host} - Opening ControlMaster connection"
         # ssh -f option does not work in subshell or list :(
-        # ssh -y option used so that misc connection errors don't clutter
-        #   terminals
-        if ssh -f -N -y ${_host}
+        # ssh -y option used (if in ${log_opt}) so that misc connection errors
+        #   do not clutter terminals
+        if ssh -f -N ${log_opt:-}${_host}
         then
             session_check ${_host} | tail -n 1
         else
             _es=${?}
-            _error=$(grep -F 'error: ssh:' /var/log/system.log | tail -n 1)
-            echo " ${_error#*error:}"
+            if [[ -n "${syslog:-}" ]]
+            then
+                _error=$(grep -F ' ssh: ' /var/log/system.log | tail -n 1)
+                echo "ERROR: ${_error#*error:}"
+            fi
             return ${_es}
         fi
     fi
