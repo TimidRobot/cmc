@@ -37,7 +37,7 @@ Script Help
         -X      exit all ControlMaster connections with sockets in ~/.ssh/
 
     Notes:
-        * Any unopened sockets in ~/.ssh/ are removed with -l and -X
+        * Any unused sockets in ~/.ssh/ are removed with -l and -X
 
 
 Install
