@@ -83,7 +83,7 @@ Requirements
 
 - \*nix Operating System with
 
-  - core utilities (``awk``, ``find``, ``grep``, and ``sed``)
+  - core utilities (``awk``, ``find``, ``grep``, ``ps``, and ``sed``)
   - GNU Bourne-Again Shell (``bash``)
   - OpenSSH 4.0 or later (``ssh``)
 
