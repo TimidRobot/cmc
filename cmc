@@ -39,7 +39,7 @@ Options:
     -X      exit all ControlMaster connections with sockets in ~/.ssh/
 
 Notes:
-    • Any unopened sockets in ~/.ssh/ are removed with -l and -X
+    • Any unused sockets in ~/.ssh/ are removed with -l and -X
 "
 
 #### FUNCTIONS ################################################################
@@ -215,6 +215,20 @@ session_open() {
 }
 
 
+session_open_all() {
+    # open ALL ControlMaster hosts from SSH config
+    local _host _i
+    _i=0
+    for _host in $(config_hosts_list)
+    do
+        (( _i > 0 )) && echo
+        session_open ${_host} || true
+        _i=$(( ++_i ))
+    done
+    return 0
+}
+
+
 socket_clean() {
     # Remove stale socket
     local _socket="${1}"
@@ -330,10 +344,7 @@ case "${action:-}" in
         ;;
    # Open all ControlMasters defined in ${ssh_config}
     'open_all' )
-        for _host in $(config_hosts_list)
-        do
-            session_open ${_host}
-        done
+        session_open_all
         ;;
      # List ControlMaster connection sockets in ~/.ssh/
     'sockets' )
