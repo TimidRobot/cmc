@@ -307,7 +307,11 @@ sockets_display() {
                     _host="${_hostname}"
                 fi
             else
-                echo "WARNING: cannot match host in socket: ${_socket}"
+                {
+                    echo "ERROR: cannot match host in socket: ${_socket}"
+                    echo "       regex pattern: ${host_regex}"
+                } 1>&2
+                exit 1
             fi
             if session_check "${_host}" "${_socket}" &> /dev/null
             then
@@ -380,6 +384,7 @@ control_path="$(config_control_path)"
 control_glob=${control_path//%?/*}
 host_regex=${control_path//%h/(.*)}
 host_regex=${host_regex//%?/.*}
+host_regex=${host_regex//\~/~}
 case "${action:-}" in
     # Check HOST ControlMaster connection status
     'check' )
