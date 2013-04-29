@@ -17,7 +17,6 @@ Example SSH Config
         HostName bastion.example.com
         ForwardAgent yes
         ControlMaster auto
-        ControlPath ~/.ssh/master-%r@%h:%p
 
     # production
     Host prod production prod*.example.com
@@ -27,9 +26,10 @@ Example SSH Config
 
     # global defaults
     Host *
-        User arthur
+        ControlPath ~/.ssh/master-%r@%h:%p
         ServerAliveCountMax 6
         ServerAliveInterval 10
+        User arthur
 
 
 Section: # insecure
@@ -98,8 +98,6 @@ provides access to servers behind a firewall. ::
    control socket. Additional sessions can connect to this socket and reuse
    the master instances (bastion's) network connection rather than initiating
    a new one.
-6. ``ControlPath ~/.ssh/master-%r@%h:%p`` supports the ControlMaster parameter.
-   See `ssh_config(5) OS X Manual Page`_ if you are really curious.
 
 
 Section: # production
@@ -161,19 +159,21 @@ of your SSH config). ::
 1. ``# global defaults`` is a comment. It helps provide context for for the
    line that follows it.
 2. ``Host *`` indicates this is the global defaults section.
-3. ``User arthur`` specifies the user to log in as (remember, in our example
-   the local username is arthurdent).
+3. ``ControlPath ~/.ssh/master-%r@%h:%p`` supports the ControlMaster parameter.
+   See `ssh_config(5) OS X Manual Page`_ if you are really curious.
 4. ``ServerAliveCountMax 6`` helps ensure robust proxied sessions. See
    `ssh_config(5) OS X Manual Page`_ if you are really curious.
 5. ``ServerAliveInterval 10``  helps ensure robust proxied sessions. See
    `ssh_config(5) OS X Manual Page`_ if you are really curious.
+6. ``User arthur`` specifies the user to log in as (remember, in our example
+   the local username is arthurdent).
 
 Additionally, the following defaults are important. The parameter is not in
 this section because the default value is appropriate. It should be
 acknowledged so that it is not unintentionally superseded by a configured
 parameter:
 
-6. ``ForwardAgent no`` specifies that the authentication agent will **not** be
+7. ``ForwardAgent no`` specifies that the authentication agent will **not** be
    forwarded. This prevents administrators on untrusted remote servers from
    masquerading as you on *any* system on which you have your SSH public key.
    See `SSH Agent Hijacking`_ for more information.

@@ -49,7 +49,6 @@ Example ``~/.ssh/config`` Configuration
         HostName bastion.example.com
         ForwardAgent yes
         ControlMaster auto
-        ControlPath ~/.ssh/master-%r@%h:%p
 
     # production
     Host prod production prod*.example.com
@@ -59,9 +58,10 @@ Example ``~/.ssh/config`` Configuration
 
     # global defaults
     Host *
-        User arthur
+        ControlPath ~/.ssh/master-%r@%h:%p
         ServerAliveCountMax 6
         ServerAliveInterval 10
+        User arthur
 
 
 Please also see the `annotated ssh configuration example`_ with explanations.
