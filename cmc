@@ -149,6 +149,36 @@ help_request_check() {
 }
 
 
+host_from_socket() {
+    # extract host from socket name
+    local _host _hostname _socket
+    _socket="${1}"
+    if [[ "${_socket}" =~ ${host_regex} ]]
+    then
+        _hostname="${BASH_REMATCH[1]}"
+        _host="$(awk \
+            "tolower(\$0) ~ /^\s*host\s+/ {
+                host=\$2
+            }
+            tolower(\$0) ~ /^\s*hostname\s+${_hostname}/ {
+                print host
+            }" ${ssh_config})"
+        if [[ -z "${_host}" ]]
+        then
+            _host="${_hostname}"
+        fi
+        echo "${_host}"
+    else
+        {
+            echo "WARNING: cannot match host in socket: ${_socket}"
+            echo "         regex pattern: ${host_regex}"
+        } 1>&2
+        echo 'HOSTNAME'
+    fi
+    return 0
+}
+
+
 session_check() {
     # Check ControlMaster connection status
     local _cmd _es _host _opt_socket _pid _result _socket _start
@@ -204,8 +234,7 @@ session_exit_all() {
         for _socket in ${_sockets}
         do
             (( _i > 0 )) && echo
-            _host="${_socket#*\@}"
-            _host="${_host%:*}"
+            _host=$(host_from_socket "${_socket}")
             if session_check ${_host} "${_socket}" &> /dev/null
             then
                 session_exit ${_host} "${_socket}"
@@ -291,28 +320,7 @@ sockets_display() {
         _i=0
         for _socket in ${_sockets}
         do
-            # extract host from socket name
-            if [[ "${_socket}" =~ ${host_regex} ]]
-            then
-                _hostname="${BASH_REMATCH[1]}"
-                _host="$(awk \
-                    "tolower(\$0) ~ /^\s*host\s+/ {
-                        host=\$2
-                    }
-                    tolower(\$0) ~ /^\s*hostname\s+${_hostname}/ {
-                        print host
-                    }" ${ssh_config})"
-                if [[ -z "${_host}" ]]
-                then
-                    _host="${_hostname}"
-                fi
-            else
-                {
-                    echo "ERROR: cannot match host in socket: ${_socket}"
-                    echo "       regex pattern: ${host_regex}"
-                } 1>&2
-                exit 1
-            fi
+            _host=$(host_from_socket "${_socket}")
             if session_check "${_host}" "${_socket}" &> /dev/null
             then
                 if (( _i > 0 ))
