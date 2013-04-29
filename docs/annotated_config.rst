@@ -183,9 +183,12 @@ References
 ==========
 
 - `ssh_config(5) OS X Manual Page`_
+- `Ubuntu Manpage: ssh_config`_
 - `SSH Agent Hijacking`_
 
 .. _`ssh_config(5) OS X Manual Page`:
    https://developer.apple.com/library/mac/#documentation/Darwin/Reference/ManPages/man5/ssh_config.5.html
+.. _`Ubuntu Manpage: ssh_config`:
+   http://manpages.ubuntu.com/manpages/precise/man5/ssh_config.5.html
 .. _SSH Agent Hijacking:
    http://www.clockwork.net/blog/2012/09/28/602/ssh_agent_hijacking

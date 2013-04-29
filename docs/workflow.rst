@@ -88,6 +88,9 @@ References
 ==========
 
 - `ssh_config(5) OS X Manual Page`_
+- `Ubuntu Manpage: ssh_config`_
 
 .. _`ssh_config(5) OS X Manual Page`:
    https://developer.apple.com/library/mac/#documentation/Darwin/Reference/ManPages/man5/ssh_config.5.html
+.. _`Ubuntu Manpage: ssh_config`:
+   http://manpages.ubuntu.com/manpages/precise/man5/ssh_config.5.html
