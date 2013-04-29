@@ -10,12 +10,6 @@ set -o errexit
 set -o errtrace
 set -o nounset
 
-trap '_es=${?};
-    _lo=${LINENO};
-    _co=${BASH_COMMAND};
-    echo "${0}: line ${_lo}: \"${_co}\" exited with a status of ${_es}";
-    exit ${_es}' ERR
-
 #### Variables
 prog="${0##*/}"
 ssh_config=~/.ssh/config
@@ -31,15 +25,17 @@ Options:
     -c HOST check HOST ControlMaster connection status (maybe specified more
             than once)
     -L      list ControlMasters defined in ${ssh_config}
-    -l      list ControlMaster connection sockets in ~/.ssh/ and check their
-            connection status
+    -l      list ControlMaster connection sockets matching ControlPath and
+            check their connection status
     -O      open all ControlMasters defined in ${ssh_config}
     -o HOST open a ControlMaster session (maybe specified more than once)
     -x HOST exit ControlMaster session (maybe specified more than once)
-    -X      exit all ControlMaster connections with sockets in ~/.ssh/
+    -X      exit all ControlMaster connections with sockets matching
+            ControlPath
 
 Notes:
-    • Any unused sockets in ~/.ssh/ are removed with -l and -X
+    • Any unused sockets in ControlPath are removed with -l and -X
+    • Only a single ControlPath should be specified
 "
 syslog_linux=/var/log/syslog
 syslog_darwin=/private/var/log/system.log
@@ -53,7 +49,9 @@ then
     log_opt='-y '
 fi
 
+
 #### FUNCTIONS ################################################################
+
 
 action_check_set() {
     # check action and set provided there is no conflict
@@ -74,7 +72,8 @@ action_check_set() {
 
 config_hosts_list() {
     # Extract ControlMaster hosts from SSH config
-    local _result=$(awk '/^[[:space:]]*(Host |ControlMaster )/ {
+    local _result=$(awk \
+            '/^[[:space:]]*(Host[[:space:]]|ControlMaster[[:space:]])/ {
                 if ($1 == "Host")
                     host=$2
                 if ($1 == "ControlMaster")
@@ -86,6 +85,28 @@ config_hosts_list() {
         return 0
     else
         error_exit "No ControlMaster hosts defined in '${ssh_config}'"
+    fi
+}
+
+
+config_control_path() {
+    # Extract ControlPath from SSH config
+    local _result _result_count
+    _result=$(awk '/^[[:space:]]*ControlPath[[:space:]]/ {print $2}' \
+            ${ssh_config})
+    if [[ -n "${_result}" ]]
+    then
+        # Only a single ControlPath should be specified
+        _result_count=$(echo "${_result}" | sort -u | wc -l)
+        if (( _result_count > 1 ))
+        then
+            error_exit "Multiple ControlPaths specified: ${_result}"
+        fi
+        # Create Path glob from ControlPath
+        echo ${_result//%?/*}
+        return 0
+    else
+        error_exit "No ControlPath defined in '${ssh_config}'"
     fi
 }
 
@@ -172,7 +193,7 @@ session_exit() {
 session_exit_all() {
     # Exit ALL ControlMaster with connection sockets in ~/.ssh/
     local _es _host _i _socket _sockets
-    _sockets=$(find ~/.ssh -type s)
+    _sockets=$(sockets_list)
     if [[ -z "${_sockets}" ]]
     then
         error_exit 'No ControlMaster connection sharing sockets found'
@@ -233,7 +254,7 @@ session_open_all() {
     # open ALL ControlMaster hosts from SSH config
     local _host _i
     _i=0
-    for _host in $(config_hosts_list)
+    for _host in ${configured_hosts}
     do
         (( _i > 0 )) && echo
         session_open ${_host} || true
@@ -251,17 +272,18 @@ socket_clean() {
         echo "       Removing: ${_socket}"
         rm -f "${_socket}"
     } 1>&2
+    return 0
 }
 
 
-sockets_list() {
+sockets_display() {
     # List ControlMaster connections sockets found in ~/.ssh
     local _check _es _first _host _socket _sockets
     # find sockets
-    _sockets=$(find ~/.ssh -type s)
+    _sockets=$(sockets_list)
     if [[ -z "${_sockets}" ]]
     then
-        echo 'No ControlMaster connections sockets found.' 1>&2
+        echo 'No ControlMaster connection sockets found.' 1>&2
         exit 0
     else
         _i=0
@@ -291,7 +313,20 @@ sockets_list() {
 }
 
 
+sockets_list() {
+    # list ControlMaster connection sockets in ControlPath
+    local _socket
+    for _socket in $(eval echo ${control_glob})
+    do
+        [[ -S "${_socket}" ]] || continue
+        echo "${_socket}"
+    done
+    return 0
+}
+
+
 #### MAIN #####################################################################
+
 
 #### Parse options
 help_request_check "${@:-}"
@@ -323,6 +358,8 @@ do
 done
 shift $((${OPTIND} - 1))
 
+configured_hosts=$(config_hosts_list)
+control_glob=$(config_control_path)
 case "${action:-}" in
     # Check HOST ControlMaster connection status
     'check' )
@@ -347,7 +384,7 @@ case "${action:-}" in
         ;;
      # List ControlMasters defined in ${ssh_config}
     'conf_list')
-        config_hosts_list
+        echo "${configured_hosts}"
         ;;
    # Open HOST ControlMaster connection (Default)
     'open' )
@@ -362,7 +399,7 @@ case "${action:-}" in
         ;;
      # List ControlMaster connection sockets in ~/.ssh/
     'sockets' )
-        sockets_list || exit ${?}
+        sockets_display || exit ${?}
         ;;
     *)
         error_exit 'orphaned argument(s)--no options were specified' 2
