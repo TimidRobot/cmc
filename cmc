@@ -73,10 +73,10 @@ action_check_set() {
 config_hosts_list() {
     # Extract ControlMaster hosts from SSH config
     local _result=$(awk \
-            '/^[[:space:]]*(Host[[:space:]]|ControlMaster[[:space:]])/ {
-                if ($1 == "Host")
+            'tolower($0) ~ /^\s*(host|controlmaster)\s+/ {
+                if (tolower($1) == "host")
                     host=$2
-                if ($1 == "ControlMaster")
+                if (tolower($1) == "controlmaster")
                     print host
             }' ${ssh_config})
     if [[ -n "${_result}" ]]
@@ -92,8 +92,10 @@ config_hosts_list() {
 config_control_path() {
     # Extract ControlPath from SSH config
     local _result _result_count
-    _result=$(awk '/^[[:space:]]*ControlPath[[:space:]]/ {print $2}' \
-            ${ssh_config})
+    _result=$(awk \
+            'tolower($0) ~ /^\s*controlpath\s+/ {
+                print $2
+            }' ${ssh_config})
     if [[ -n "${_result}" ]]
     then
         # Only a single ControlPath should be specified
@@ -103,7 +105,7 @@ config_control_path() {
             error_exit "Multiple ControlPaths specified: ${_result}"
         fi
         # Create Path glob from ControlPath
-        echo ${_result//%?/*}
+        echo ${_result}
         return 0
     else
         error_exit "No ControlPath defined in '${ssh_config}'"
@@ -268,8 +270,8 @@ socket_clean() {
     # Remove stale socket
     local _socket="${1}"
     {
-        echo 'ERROR: Stale ControlMaster connection socket'
-        echo "       Removing: ${_socket}"
+        echo 'WARNING: Stale ControlMaster connection socket'
+        echo "         Removing: ${_socket}"
         rm -f "${_socket}"
     } 1>&2
     return 0
@@ -290,8 +292,23 @@ sockets_display() {
         for _socket in ${_sockets}
         do
             # extract host from socket name
-            _host="${_socket#*@}"
-            _host="${_host%:*}"
+            if [[ "${_socket}" =~ ${host_regex} ]]
+            then
+                _hostname="${BASH_REMATCH[1]}"
+                _host="$(awk \
+                    "tolower(\$0) ~ /^\s*host\s+/ {
+                        host=\$2
+                    }
+                    tolower(\$0) ~ /^\s*hostname\s+${_hostname}/ {
+                        print host
+                    }" ${ssh_config})"
+                if [[ -z "${_host}" ]]
+                then
+                    _host="${_hostname}"
+                fi
+            else
+                echo "WARNING: cannot match host in socket: ${_socket}"
+            fi
             if session_check "${_host}" "${_socket}" &> /dev/null
             then
                 if (( _i > 0 ))
@@ -359,7 +376,10 @@ done
 shift $((${OPTIND} - 1))
 
 configured_hosts=$(config_hosts_list)
-control_glob=$(config_control_path)
+control_path="$(config_control_path)"
+control_glob=${control_path//%?/*}
+host_regex=${control_path//%h/(.*)}
+host_regex=${host_regex//%?/.*}
 case "${action:-}" in
     # Check HOST ControlMaster connection status
     'check' )
