@@ -29,15 +29,17 @@ Script Help
         -c HOST check HOST ControlMaster connection status (maybe specified more
                 than once)
         -L      list ControlMasters defined in SSH_CONFIG
-        -l      list ControlMaster connection sockets in ~/.ssh/ and check their
-                connection status
+        -l      list ControlMaster connection sockets matching ControlPath and
+                check their connection status
         -O      open all ControlMasters defined in SSH_CONFIG
         -o HOST open a ControlMaster session (maybe specified more than once)
-        -x HOST close ControlMaster session (maybe specified more than once)
-        -X      exit all ControlMaster connections with sockets in ~/.ssh/
+        -x HOST exit ControlMaster session (maybe specified more than once)
+        -X      exit all ControlMaster connections with sockets matching
+                ControlPath
 
     Notes:
-        * Any unused sockets in ~/.ssh/ are removed with -l and -X
+        • Any unused sockets in ControlPath are removed with -l and -X
+        • Only a single ControlPath should be specified
 
 
 Install
@@ -84,7 +86,7 @@ Requirements
 - \*nix Operating System with
 
   - core utilities (``awk``, ``find``, ``grep``, ``ps``, and ``sed``)
-  - GNU Bourne-Again Shell (``bash``)
+  - GNU Bourne-Again Shell 3.0 or later (``bash``)
   - OpenSSH 4.0 or later (``ssh``)
 
 
