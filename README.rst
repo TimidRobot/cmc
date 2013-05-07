@@ -45,7 +45,7 @@ Script Help
 Install
 =======
 
-Download ``mcc`` and ensure it is in your ``PATH``.
+Download ``cmc`` and ensure it is in your ``PATH``.
 
 
 Documentation
