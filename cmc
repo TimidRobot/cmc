@@ -73,7 +73,7 @@ action_check_set() {
 config_hosts_list() {
     # Extract ControlMaster hosts from SSH config
     local _result=$(awk \
-            'tolower($0) ~ /^\s*(host|controlmaster)\s+/ {
+            'tolower($0) ~ /^[[:space:]]*(host|controlmaster)[[:space:]]+/ {
                 if (tolower($1) == "host")
                     host=$2
                 if (tolower($1) == "controlmaster")
@@ -93,7 +93,7 @@ config_control_path() {
     # Extract ControlPath from SSH config
     local _result _result_count
     _result=$(awk \
-            'tolower($0) ~ /^\s*controlpath\s+/ {
+            'tolower($0) ~ /^[[:space:]]*controlpath[[:space:]]+/ {
                 print $2
             }' ${ssh_config})
     if [[ -n "${_result}" ]]
@@ -157,10 +157,10 @@ host_from_socket() {
     then
         _hostname="${BASH_REMATCH[1]}"
         _host="$(awk \
-            "tolower(\$0) ~ /^\s*host\s+/ {
+            "tolower(\$0) ~ /^[[:space:]]*host[[:space:]]+/ {
                 host=\$2
             }
-            tolower(\$0) ~ /^\s*hostname\s+${_hostname}/ {
+            tolower(\$0) ~ /^[[:space:]]*hostname[[:space:]]+${_hostname}/ {
                 print host
             }" ${ssh_config})"
         if [[ -z "${_host}" ]]
