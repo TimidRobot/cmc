@@ -54,7 +54,7 @@ Documentation
 Workflow
 --------
 
-**See** |workflow|_
+**See** |workflow|_.
 
 .. |workflow| replace:: **docs/workflow.rst**
 .. _workflow: docs/workflow.rst
@@ -62,7 +62,7 @@ Workflow
 Annotated SSH Configuration
 ---------------------------
 
-**See** |annotated_config|_
+**See** |annotated_config|_.
 
 .. |annotated_config| replace:: **docs/annotated_config.rst**
 .. _annotated_config: docs/annotated_config.rst
@@ -93,7 +93,6 @@ Requirements
 License
 =======
 
-- LICENSE_ (`MIT License`_)
+- `<LICENSE>`_ (`MIT License`_)
 
-.. _LICENSE: LICENSE
 .. _`MIT License`: http://www.opensource.org/licenses/MIT
