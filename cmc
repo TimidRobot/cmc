@@ -271,7 +271,7 @@ session_open() {
             _es=${?}
             if [[ -n "${syslog:-}" ]]
             then
-                _error=$(grep -F ' ssh: ' /var/log/system.log | tail -n 1)
+                _error=$(grep -F ' ssh: ' ${syslog} | tail -n 1)
                 echo "ERROR: ${_error#*error:}" 1>&2
             fi
             return ${_es}
