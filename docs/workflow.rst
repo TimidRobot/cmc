@@ -74,7 +74,7 @@ Workflow
 
 1. Establish control sessions at the start of your day/session/etc.
 
-   - ``cmc bastion``
+   - ``cmc -c bastion`` or ``cmc -O``
    - This establishes a control master connection in the background. It will
      stay connected and available until it is closed or connectivity is lost.
 
