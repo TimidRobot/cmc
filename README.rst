@@ -45,7 +45,19 @@ Script Help
 Install
 =======
 
-Download ``cmc`` and ensure it is in your ``PATH``.
+1. `Install Homebrew`_ — The missing package manager for OS X
+2. Add the cmc "tap" and install cmc::
+
+    brew tap ClockworkNet/cmc
+    brew install cmc
+
+Alternatively, since ``cmc`` is a bash script without esoteric dependencies,
+you can simply download it and ensure it is in your ``PATH``.
+
+If this utility is helpful for you, please star this project so that it can
+eventually be included in Homebrew proper. Thank you!
+
+.. _`Install Homebrew`: http://brew.sh/#install
 
 
 Documentation
