@@ -22,14 +22,14 @@ ControlMaster Controller - Eases management of SSH ControlMaster connections
 
 Options:
     -h      show this help message and exit
-    -c HOST check HOST ControlMaster connection status (maybe specified more
+    -c HOST check HOST ControlMaster connection status (may be specified more
             than once)
     -L      list ControlMasters defined in ${ssh_config}
     -l      list ControlMaster connection sockets matching ControlPath and
             check their connection status
     -O      open all ControlMasters defined in ${ssh_config}
-    -o HOST open a ControlMaster session (maybe specified more than once)
-    -x HOST exit ControlMaster session (maybe specified more than once)
+    -o HOST open a ControlMaster session (may be specified more than once)
+    -x HOST exit ControlMaster session (may be specified more than once)
     -X      exit all ControlMaster connections with sockets matching
             ControlPath
 
