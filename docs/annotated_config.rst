@@ -27,8 +27,9 @@ Example SSH Config
     # global defaults
     Host *
         ControlPath ~/.ssh/master-%r@%h:%p
-        ServerAliveCountMax 6
-        ServerAliveInterval 10
+        ServerAliveCountMax 18
+        ServerAliveInterval 5
+        TCPKeepAlive no
         User arthur
 
 
@@ -151,21 +152,24 @@ of your SSH config). ::
 
     # global defaults
     Host *
-        User arthur
         ForwardAgent no
-        ServerAliveCountMax 6
-        ServerAliveInterval 10
+        ServerAliveCountMax 18
+        ServerAliveInterval 5
+        TCPKeepAlive no
+        User arthur
 
 1. ``# global defaults`` is a comment. It helps provide context for for the
    line that follows it.
 2. ``Host *`` indicates this is the global defaults section.
 3. ``ControlPath ~/.ssh/master-%r@%h:%p`` supports the ControlMaster parameter.
    See `ssh_config(5) OS X Manual Page`_ if you are really curious.
-4. ``ServerAliveCountMax 6`` helps ensure robust proxied sessions. See
+4. ``ServerAliveCountMax 18`` helps ensure robust proxied sessions. See
    `ssh_config(5) OS X Manual Page`_ if you are really curious.
-5. ``ServerAliveInterval 10``  helps ensure robust proxied sessions. See
+5. ``ServerAliveInterval 5``  helps ensure robust proxied sessions. See
    `ssh_config(5) OS X Manual Page`_ if you are really curious.
-6. ``User arthur`` specifies the user to log in as (remember, in our example
+6. ``TCPKeepAlive no`` allows connections to weather short network outages
+   (especially useful when connected via WiFi).
+7. ``User arthur`` specifies the user to log in as (remember, in our example
    the local username is arthurdent).
 
 Additionally, the following defaults are important. The parameter is not in
@@ -189,6 +193,6 @@ References
 .. _`ssh_config(5) OS X Manual Page`:
    https://developer.apple.com/library/mac/#documentation/Darwin/Reference/ManPages/man5/ssh_config.5.html
 .. _`Ubuntu Manpage: ssh_config`:
-   http://manpages.ubuntu.com/manpages/precise/man5/ssh_config.5.html
+   http://manpages.ubuntu.com/manpages/trusty/man5/ssh_config.5.html
 .. _SSH Agent Hijacking:
    http://www.clockwork.net/blog/2012/09/28/602/ssh_agent_hijacking
