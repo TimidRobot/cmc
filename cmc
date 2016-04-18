@@ -73,12 +73,11 @@ action_check_set() {
 config_hosts_list() {
     # Extract ControlMaster hosts from SSH config
     local _result=$(awk \
-            'tolower($0) ~ /^[[:space:]]*(host|controlmaster)[[:space:]]+/ {
-                if (tolower($1) == "host")
-                    host=$2
-                if (tolower($1) == "controlmaster")
-                    print host
-            }' ${ssh_config})
+        'tolower($0) ~ /^[[:space:]]*host[[:space:]]+/ {
+            host=$2; next }
+         tolower($0) ~ /^[[:space:]]*controlmaster[[:space:]]+(yes|auto)/ {
+            print host; next }
+        ' ${ssh_config})
     if [[ -n "${_result}" ]]
     then
         echo "${_result}"
