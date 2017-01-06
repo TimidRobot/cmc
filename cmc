@@ -93,7 +93,9 @@ config_control_path() {
     local _result _result_count
     _result=$(awk \
             'tolower($0) ~ /^[[:space:]]*controlpath[[:space:]]+/ {
-                print $2
+                if ( $0 !~ /none$/ ) {
+                    print $2
+                }
             }' ${ssh_config})
     if [[ -n "${_result}" ]]
     then
