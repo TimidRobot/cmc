@@ -119,7 +119,7 @@ Requirements
 License
 =======
 
-.. image:: https://img.shields.io/github/license/TimZehta/dullaplan.svg
+.. image:: https://img.shields.io/github/license/ClockworkNet/cmc.svg
     :alt: badge: GitHub license (MIT)
     :align: right
     :target: `MIT License`_
