@@ -73,7 +73,7 @@ action_check_set() {
 config_hosts_list() {
     # Extract ControlMaster hosts from SSH config
     local _result=$(awk \
-        'tolower($0) ~ /^[[:space:]]*host[[:space:]]+/ {
+        'tolower($1) ~ /^host$/ {
             host=$2; next }
          tolower($0) ~ /^[[:space:]]*controlmaster[[:space:]]+(yes|auto)/ {
             print host; next }
@@ -92,8 +92,8 @@ config_control_path() {
     # Extract ControlPath from SSH config
     local _result _result_count
     _result=$(awk \
-            'tolower($0) ~ /^[[:space:]]*controlpath[[:space:]]+/ {
-                if ( $0 !~ /none$/ ) {
+            'tolower($1) ~ /^controlpath$/ {
+                if ( tolower($2) !~ /^none$/ ) {
                     print $2
                 }
             }' ${ssh_config})
