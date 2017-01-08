@@ -13,6 +13,7 @@ the following benefits:
 - Sessions to or through ControlMaster hosts do not need to create a new
   connection (SSH will be faster for most tasks)
 
+
 Script Help
 -----------
 
@@ -63,6 +64,19 @@ eventually be included in Homebrew proper. Thank you!
 Documentation
 =============
 
+
+ControlPersist
+--------------
+
+**Note:** This utility is largely deprecated by the addition of ControlPersist
+in `OpenSSH 5.6`_. It allows ControlMaster sessions to be configured to timeout
+instead of relying on a utility like ``cmc`` to manage them. See
+`ssh_config(5)`_ for more details.
+
+.. _`OpenSSH 5.6`: https://www.openssh.com/txt/release-5.6
+.. _`ssh_config(5)`: http://man.openbsd.org/OpenBSD-current/man5/ssh_config.5
+
+
 Workflow
 --------
 
@@ -83,9 +97,9 @@ Annotated SSH Configuration
 Related
 =======
 
-* mac-ssh-confirm_: Protect against SSH Agent Hijacking on Mac OS X with the
+- mac-ssh-confirm_: Protect against SSH Agent Hijacking on macOS with the
   ability to confirm agent identities prior to each use
-* gacli_: Mac CLI Google Authenticator client (ex. for use with SSH Bastions
+- gacli_: Mac CLI Google Authenticator client (ex. for use with SSH Bastions
   that utilize Google Authenticator)
 
 .. _mac-ssh-confirm: https://github.com/TimZehta/mac-ssh-confirm
@@ -105,6 +119,10 @@ Requirements
 License
 =======
 
+.. image:: https://img.shields.io/github/license/TimZehta/dullaplan.svg
+    :alt: badge: GitHub license (MIT)
+    :align: right
+    :target: `MIT License`_
 - `<LICENSE>`_ (`MIT License`_)
 
 .. _`MIT License`: http://www.opensource.org/licenses/MIT
