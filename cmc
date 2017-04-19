@@ -180,6 +180,18 @@ host_from_socket() {
 }
 
 
+strip_clean() {
+    # Strip
+    # - all control characters
+    # - leading whitespace
+    # - trailing whitespace
+    echo "${1}" | sed \
+        -e's/[[:cntrl:]]*//g' \
+        -e's/^[[:space:]]*//' \
+        -e's/[[:space:]]*$//'
+}
+
+
 session_check() {
     # Check ControlMaster connection status
     local _cmd _es _host _opt_socket _pid _result _socket _start
@@ -190,8 +202,7 @@ session_check() {
     echo "${_host} - Checking ControlMaster connection status"
     _result=$(ssh ${_opt_socket} -O check ${_host} 2>&1 || exit ${?}) \
         || _es=${?}
-    # strip control characters from result
-    _result=$(echo "${_result}" | sed -e 's/[[:cntrl:]]*//g')
+    _result=$(strip_clean "${_result}")
     if (( ${_es:-0} != 0 ))
     then
         echo "  ${_result}"
@@ -199,13 +210,13 @@ session_check() {
     fi
     _pid=$(echo "${_result}" | sed -e 's/[^0-9]*//g')
     _cmd=$(ps -p ${_pid} -o command=)
+    _cmd=$(strip_clean "${_cmd}")
     _start=$(ps -p ${_pid} -o start=)
     _start=${_start# }
     _result=${_result%)}
     echo "  ${_result}, cmd=${_cmd}, start=${_start})"
     return 0
 }
-
 
 session_exit() {
     # Exit an existing ControlMaster process
@@ -217,8 +228,7 @@ session_exit() {
     echo "${_host} - Closing ControlMaster connection"
     _result=$(ssh ${_opt_socket} -O exit ${_host} 2>&1 || exit ${?}) \
         || _es=${?}
-    # strip control characters from result
-    _result=$(echo "${_result}" | sed -e 's/[[:cntrl:]]*//g')
+    _result=$(strip_clean "${_result}")
     echo "  ${_result}"
     return ${_es:-0}
 }
