@@ -203,6 +203,7 @@ session_check() {
     _start=${_start# }
     _result=${_result%)}
     echo "  ${_result}, cmd=${_cmd}, start=${_start})"
+    return 0
 }
 
 
@@ -402,7 +403,7 @@ case "${action:-}" in
             session_check ${_host}
         done
         ;;
-   # Exit HOST ControlMaster connection
+    # Exit HOST ControlMaster connection
     'exit' )
         for _host in ${hosts}
         do
@@ -416,25 +417,26 @@ case "${action:-}" in
     'exit_all' )
         session_exit_all || exit ${?}
         ;;
-     # List ControlMasters defined in ${ssh_config}
+    # List ControlMasters defined in ${ssh_config}
     'conf_list')
         echo "${configured_hosts}"
         ;;
-   # Open HOST ControlMaster connection (Default)
+    # Open HOST ControlMaster connection (Default)
     'open' )
         for _host in ${hosts}
         do
             session_open ${_host}
         done
         ;;
-   # Open all ControlMasters defined in ${ssh_config}
+    # Open all ControlMasters defined in ${ssh_config}
     'open_all' )
         session_open_all
         ;;
-     # List ControlMaster connection sockets in ~/.ssh/
+    # List ControlMaster connection sockets in ~/.ssh/
     'sockets' )
         sockets_display || exit ${?}
         ;;
     *)
         error_exit 'orphaned argument(s)--no options were specified' 2
+        ;;
  esac
