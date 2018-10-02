@@ -85,6 +85,7 @@ Workflow
 .. |workflow| replace:: **docs/workflow.rst**
 .. _workflow: docs/workflow.rst
 
+
 Annotated SSH Configuration
 ---------------------------
 
@@ -116,6 +117,16 @@ Requirements
   - OpenSSH 4.0 or later (``ssh``)
 
 
+Supported By
+============
+
+Development of this project has been supported by `Clockwork`_
+(`ClockworkNet`_). Thank you!
+
+.. _Clockwork: https://www.clockwork.com/
+.. _ClockworkNet: https://github.com/ClockworkNet
+
+
 License
 =======
 
@@ -123,6 +134,6 @@ License
     :alt: badge: GitHub license (MIT)
     :align: right
     :target: `MIT License`_
-- `<LICENSE>`_ (`MIT License`_)
+- `<LICENSE>`_ (Expat License/`MIT License`_)
 
 .. _`MIT License`: http://www.opensource.org/licenses/MIT
