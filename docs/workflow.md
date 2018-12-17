@@ -12,10 +12,10 @@ excellent security, it should also make your work *easier* and
 2. You have already created a SSH key pair and added the secret key to your
    Mac keychain.
    - Test to see currently available keys:
-     A. `ssh-add -L`
+     1. `ssh-add -L`
    - SSH key pair creation example:
-     A. `ssh-keygen -b 4096 -C USERNAME@COMPUTER_DESC`
-     B. `ssh-add -K`
+     1. `ssh-keygen -b 4096 -C USERNAME@COMPUTER_DESC`
+     2. `ssh-add -K`
 3. Your name is Arthur Dent
    - Your username on your Mac laptop is `arthurdent`
    - Your username on remote systems is `arthur`
