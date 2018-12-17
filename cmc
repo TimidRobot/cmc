@@ -151,8 +151,15 @@ session_check() {
     _result=$(strip_clean "${_result}")
     if (( ${_es:-0} != 0 ))
     then
-        echo "  ${_result}"
-        socket_clean ${_socket}
+        if [[ -z "${_socket}" ]]
+        then
+            _socket="${_result#*(}"
+            _socket="${_socket%)*}"
+        fi
+        if [[ -S "${_socket}" ]]
+        then
+            socket_clean "${_socket}"
+        fi
         return ${_es}
     fi
     echo "${_result}"
@@ -198,9 +205,9 @@ session_exit() {
     _host=${1}
     _opt_socket=''
     _socket=${2:-}
-    session_check "${_host}" &> /dev/null || return 0
+    session_check "${_host}" "${_socket}" &> /dev/null || return 0
     [[ -n "${_socket}" ]] && _opt_socket="-S ${_socket}"
-    echo "${_host}"
+    echo "${WHT}${_host}${RST}"
     echo '  Closing ControlMaster connection'
     _result=$(ssh ${_opt_socket} -O exit ${_host} 2>&1 || exit ${?}) \
         || _es=${?}
@@ -277,7 +284,7 @@ sockets_display() {
 sockets_list() {
     # list ControlMaster connection sockets in ControlPath
     local _socket
-    for _socket in $(eval echo ${CONTROL_GLOB})
+    for _socket in ${CONTROL_GLOB}
     do
         [[ -S "${_socket}" ]] || continue
         echo "${_socket}"
