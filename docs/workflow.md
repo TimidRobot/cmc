@@ -62,8 +62,9 @@ Please also see the annotated ssh configuration example with explanations:
    - `ssh prod`
    - Automatically connects to `bastion` and proxies through it.
 2. Realize you need to completely reconnect for some reason (ex. you made an
-   error in your gpg-agent configuration.
-3. Close impacted connections:
+   error in your gpg-agent configuration).
+3. List current connections with `cmc -l`.
+4. Close impacted connections with
    - `cmc -x bastion` (which will automatically close the connection to `prod`)
    - or `cmc -X` to close all active connections
 
