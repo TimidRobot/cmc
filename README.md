@@ -1,6 +1,7 @@
 # cmc
 
-ControlMaster Controller - Eases management of SSH ControlMaster connections 
+ControlMaster Controller - Eases management of SSH ControlMaster connections
+
 
 ## Overview
 
@@ -68,10 +69,11 @@ eventually be included in Homebrew proper. Thank you!
 
 ### ControlPersist
 
-**Note:** This utility is partially deprecated by the addition of
-ControlPersist in [OpenSSH 5.6][openssh56]. It allows ControlMaster sessions to
-be configured to timeout instead of relying on a utility like `cmc` to manage
-them. See [ssh_config(5)][mansshconfig] for more details.
+Prior to the addition of `ControlPersist` in [OpenSSH 5.6][openssh56], this
+utility was needed. However it still convenient to be able to quickly manage
+ControlMaster connections.
+
+For more information on `ControlPersist` see [ssh_config(5)][mansshconfig].
 
 [openssh56]:https://www.openssh.com/txt/release-5.6
 [mansshconfig]:http://man.openbsd.org/OpenBSD-current/man5/ssh_config.5
@@ -79,14 +81,14 @@ them. See [ssh_config(5)][mansshconfig] for more details.
 
 ### Workflow
 
-**See** [`docs/workflow`][workflow].
+See [`docs/workflow`][workflow].
 
 [workflow]:docs/workflow.rst
 
 
 ### Annotated SSH Configuration
 
-**See** [`docs/annotated_config`][annotated].
+See [`docs/annotated_config`][annotated].
 
 [annotated]:docs/annotated_config.rst
 
