@@ -64,7 +64,8 @@ Please also see the annotated ssh configuration example with explanations:
 2. Realize you need to completely reconnect for some reason (ex. you made an
    error in your gpg-agent configuration.
 3. Close impacted connections:
-   - `cmc -x bastion` (which will automatically close the connection to `prod`
+   - `cmc -x bastion` (which will automatically close the connection to `prod`)
+   - or `cmc -X` to close all active connections
 
 
 ## References
