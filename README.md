@@ -83,14 +83,14 @@ For more information on `ControlPersist` see [ssh_config(5)][mansshconfig].
 
 See [`docs/workflow`][workflow].
 
-[workflow]:docs/workflow.rst
+[workflow]:docs/workflow.md
 
 
 ### Annotated SSH Configuration
 
 See [`docs/annotated_config`][annotated].
 
-[annotated]:docs/annotated_config.rst
+[annotated]:docs/annotated_config.md
 
 
 ### Related
