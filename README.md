@@ -111,7 +111,7 @@ See [`docs/annotated_config`][annotated].
 
 ## Requirements
 
-- any \*nix Operating System (including Linux and macOS) with
+- any \*nix Operating System (including Linux and macOS) with:
   - core utilities (`awk`, `find`, `grep`, `ps`, and `sed`)
   - GNU Bourne-Again Shell 3.0 or later (`bash`)
   - OpenSSH 4.0 or later (`ssh`)
