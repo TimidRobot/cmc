@@ -18,28 +18,22 @@ the following benefits:
 ## Script Help
 
 ```
-Usage:  cmc [ -c HOST | -o HOST | -x HOST ]
-        cmc [ -L | -l | -O | -X ]
+Usage:  cmc [ -c HOST | -x HOST ]
+        cmc [ -l | -X ]
         cmc -h
 
 ControlMaster Controller - Eases management of SSH ControlMaster connections
 
 Options:
     -h      show this help message and exit
-    -c HOST check HOST ControlMaster connection status (maybe specified more
+    -c HOST check HOST ControlMaster connection status (may be specified more
             than once)
-    -L      list ControlMasters defined in SSH_CONFIG
-    -l      list ControlMaster connection sockets matching ControlPath and
-            check their connection status
-    -O      open all ControlMasters defined in SSH_CONFIG
-    -o HOST open a ControlMaster session (maybe specified more than once)
-    -x HOST exit ControlMaster session (maybe specified more than once)
-    -X      exit all ControlMaster connections with sockets matching
-            ControlPath
+    -l      list all active ControlMaster connection sockets
+    -x HOST exit ControlMaster session (may be specified more than once)
+    -X      exit all ControlMaster connections with sockets
 
 Notes:
-    • Any unused sockets in ControlPath are removed with -l and -X
-    • Only a single ControlPath should be specified
+    - Any unused sockets in ControlPath are removed with -l and -X
 ```
 
 

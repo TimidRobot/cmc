@@ -11,12 +11,11 @@ set -o errtrace
 set -o nounset
 
 #### Variables
-prog="${0##*/}"
-ssh_config=~/.ssh/config
-usage="\
-Usage:  ${prog} [ -c HOST | -o HOST | -x HOST ]
-        ${prog} [ -L | -l | -O | -X ]
-        ${prog} -h
+PROG="${0##*/}"
+USAGE="\
+Usage:  ${PROG} [ -c HOST | -x HOST ]
+        ${PROG} [ -l | -X ]
+        ${PROG} -h
 
 ControlMaster Controller - Eases management of SSH ControlMaster connections
 
@@ -24,30 +23,29 @@ Options:
     -h      show this help message and exit
     -c HOST check HOST ControlMaster connection status (may be specified more
             than once)
-    -L      list ControlMasters defined in ${ssh_config}
-    -l      list ControlMaster connection sockets matching ControlPath and
-            check their connection status
-    -O      open all ControlMasters defined in ${ssh_config}
-    -o HOST open a ControlMaster session (may be specified more than once)
+    -l      list all active ControlMaster connection sockets
     -x HOST exit ControlMaster session (may be specified more than once)
-    -X      exit all ControlMaster connections with sockets matching
-            ControlPath
+    -X      exit all ControlMaster connections with sockets
 
 Notes:
-    • Any unused sockets in ControlPath are removed with -l and -X
-    • Only a single ControlPath should be specified
+    - Any unused sockets in ControlPath are removed with -l and -X
 "
-syslog_linux=/var/log/syslog
-syslog_darwin=/private/var/log/system.log
-if [[ -f ${syslog_linux} ]]
+HOSTS=()
+SSH_CONFIG=~/.ssh/config
+SYSLOG_LINUX=/var/log/syslog
+SYSLOG_DARWIN=/private/var/log/system.log
+if [[ -f ${SYSLOG_LINUX} ]]
 then
-    syslog=${syslog_linux}
+    syslog=${SYSLOG_LINUX}
     log_opt='-y '
-elif [[ -f ${syslog_darwin} ]]
+elif [[ -f ${SYSLOG_DARWIN} ]]
 then
-    syslog=${syslog_darwin}
+    syslog=${SYSLOG_DARWIN}
     log_opt='-y '
 fi
+DKG=$(printf '\e[90m')
+RST=$(printf '\e[0m')
+WHT=$(printf '\e[97m')
 
 
 #### FUNCTIONS ################################################################
@@ -55,52 +53,33 @@ fi
 
 action_check_set() {
     # check action and set provided there is no conflict
-    local _action _msg
-    _action=${1}
-    if [[ -n "${action:-}" ]] && [[ "${action}" != "${_action}" ]]
+    local _action=${1}
+    local _opt=${2}
+    if [[ -n "${ACTION:-}" ]] && [[ "${ACTION}" != "${_action}" ]]
     then
-        _msg="more than one options ('-${Option}' and '-${opt:-}')"
-        _msg="${_msg} specified"
+        local _msg="more than one action option ('${OPT}' and '${_opt}')"
+        local _msg="${_msg} specified"
         error_exit "${_msg}" 2
     else
-        action=${_action}
-        opt=${Option}
+        ACTION=${_action}
+        OPT=${_opt}
     fi
     return 0
 }
 
 
-config_hosts_list() {
-    # Extract ControlMaster hosts from SSH config
-    local _result=$(awk \
-        'tolower($1) ~ /^host$/ {
-            host=$2; next }
-         tolower($0) ~ /^[[:space:]]*controlmaster[[:space:]]+(yes|auto)/ {
-            print host; next }
-        ' ${ssh_config})
-    if [[ -n "${_result}" ]]
-    then
-        echo "${_result}"
-        return 0
-    else
-        error_exit "No ControlMaster hosts defined in '${ssh_config}'"
-    fi
-}
-
-
 config_control_path() {
     # Extract ControlPath from SSH config
-    local _result _result_count
-    _result=$(awk \
+    local _result=$(awk \
             'tolower($1) ~ /^controlpath$/ {
                 if ( tolower($2) !~ /^none$/ ) {
                     print $2
                 }
-            }' ${ssh_config})
+            }' ${SSH_CONFIG})
     if [[ -n "${_result}" ]]
     then
         # Only a single ControlPath should be specified
-        _result_count=$(echo "${_result}" | sort -u | wc -l)
+        local _result_count=$(echo "${_result}" | sort -u | wc -l)
         if (( _result_count > 1 ))
         then
             error_exit "Multiple ControlPaths specified: ${_result}"
@@ -109,16 +88,15 @@ config_control_path() {
         echo ${_result}
         return 0
     else
-        error_exit "No ControlPath defined in '${ssh_config}'"
+        error_exit "No ControlPath defined in '${SSH_CONFIG}'"
     fi
 }
 
 
 error_exit() {
     # Display error message and exit
-    local _es _msg
-    _msg=${1}
-    _es=${2:-1}
+    local _msg=${1}
+    local _es=${2:-1}
     echo "ERROR: ${_msg}" 1>&2
     exit ${_es}
 }
@@ -127,68 +105,37 @@ error_exit() {
 help_print() {
     # Print help/usage, then exit (incorrect usage should exit 2)
     local _es=${1:-0}
-    echo "${usage}"
+    echo "${USAGE}"
     exit ${_es}
-}
-
-
-help_request_check() {
-    # Print Help/Usage if requested
-    local _arg
-    shopt -s nocasematch
-    # only accept help "action" in 1st position
-    [[ "${1:-}" == 'help' ]] && help_print
-    # evaulate all positional parameters for help options
-    for _arg in "${@}"
-    do
-        case "${_arg}" in
-            -h | -help | --help ) help_print ;;
-        esac
-    done
-    shopt -u nocasematch
-    return 0
 }
 
 
 host_from_socket() {
     # extract host from socket name
-    local _host _hostname _socket
-    _socket="${1}"
-    if [[ "${_socket}" =~ ${host_regex} ]]
+    local _socket="${1}"
+    if [[ "${_socket}" =~ ${HOST_REGEX} ]]
     then
-        _hostname="${BASH_REMATCH[1]}"
-        _host="$(awk \
+        local _hostname="${BASH_REMATCH[1]}"
+        local _host="$(awk \
             "tolower(\$0) ~ /^[[:space:]]*host[[:space:]]+/ {
                 host=\$2
             }
             tolower(\$0) ~ /^[[:space:]]*hostname[[:space:]]+${_hostname}/ {
                 print host
-            }" ${ssh_config})"
+            }" ${SSH_CONFIG})"
         if [[ -z "${_host}" ]]
         then
-            _host="${_hostname}"
+            local _host="${_hostname}"
         fi
         echo "${_host}"
     else
         {
             echo "WARNING: cannot match host in socket: ${_socket}"
-            echo "         regex pattern: ${host_regex}"
+            echo "         regex pattern: ${HOST_REGEX}"
         } 1>&2
         echo 'HOSTNAME'
     fi
     return 0
-}
-
-
-strip_clean() {
-    # Strip
-    # - all control characters
-    # - leading whitespace
-    # - trailing whitespace
-    echo "${1}" | sed \
-        -e's/[[:cntrl:]]*//g' \
-        -e's/^[[:space:]]*//' \
-        -e's/[[:space:]]*$//'
 }
 
 
@@ -199,23 +146,49 @@ session_check() {
     _opt_socket=''
     _socket=${2:-}
     [[ -n "${_socket}" ]] && _opt_socket="-S ${_socket}"
-    echo "${_host} - Checking ControlMaster connection status"
     _result=$(ssh ${_opt_socket} -O check ${_host} 2>&1 || exit ${?}) \
         || _es=${?}
     _result=$(strip_clean "${_result}")
     if (( ${_es:-0} != 0 ))
     then
         echo "  ${_result}"
+        socket_clean ${_socket}
         return ${_es}
     fi
-    _pid=$(echo "${_result}" | sed -e 's/[^0-9]*//g')
-    _cmd=$(ps -p ${_pid} -o command=)
-    _cmd=$(strip_clean "${_cmd}")
-    _start=$(ps -p ${_pid} -o start=)
-    _start=${_start# }
-    _result=${_result%)}
-    echo "  ${_result}, cmd=${_cmd}, start=${_start})"
-    return 0
+    echo "${_result}"
+}
+
+
+session_check_host() {
+    local _check _cmd _es _host _pid _socket _status
+    _host=${1}
+    _socket=${2:-}
+    if _check=$(session_check "${_host}" "${_socket}")
+    then
+        echo "${WHT}${_host}${RST}"
+        _pid=${_check%)}
+        _pid=${_pid##*=}
+        echo "   ${DKG}pid:${RST} ${_pid}"
+        _start=$(ps -p ${_pid} -o start=)
+        _start=$(strip_clean "${_start}")
+        _start=${_start# }
+        echo " ${DKG}start:${RST} ${_start}"
+        _status="${_check% (*}"
+        echo "${DKG}status:${RST} ${_status}"
+        _socket="${2:-}"
+        if [[ -z "${_socket}" ]]
+        then
+            _cmd=$(ps -p ${_pid} -o command=)
+            _cmd=$(strip_clean "${_cmd}")
+            _socket="${_cmd#* }"
+            _socket="${_socket% *}"
+        fi
+        _socket="${_socket/${HOME}/~}"
+        echo "${DKG}socket:${RST} ${_socket}"
+    else
+        _es=${?}
+    fi
+    return ${_es:-0}
 }
 
 
@@ -225,8 +198,10 @@ session_exit() {
     _host=${1}
     _opt_socket=''
     _socket=${2:-}
+    session_check "${_host}" &> /dev/null || return 0
     [[ -n "${_socket}" ]] && _opt_socket="-S ${_socket}"
-    echo "${_host} - Closing ControlMaster connection"
+    echo "${_host}"
+    echo '  Closing ControlMaster connection'
     _result=$(ssh ${_opt_socket} -O exit ${_host} 2>&1 || exit ${?}) \
         || _es=${?}
     _result=$(strip_clean "${_result}")
@@ -237,74 +212,31 @@ session_exit() {
 
 session_exit_all() {
     # Exit ALL ControlMaster with connection sockets in ~/.ssh/
-    local _es _host _i _socket _sockets
-    _sockets=$(sockets_list)
+    local _sockets=$(sockets_list)
     if [[ -z "${_sockets}" ]]
     then
         error_exit 'No ControlMaster connection sharing sockets found'
     else
-        _i=0
+        local _i=0
         for _socket in ${_sockets}
         do
             (( _i > 0 )) && echo
-            _host=$(host_from_socket "${_socket}")
-            if session_check ${_host} "${_socket}" &> /dev/null
-            then
-                session_exit ${_host} "${_socket}"
-            else
-                _es=4
-                socket_clean ${_socket}
-            fi
-            _i=$(( ++_i ))
+            local _host=$(host_from_socket "${_socket}")
+            session_exit "${_host}" "${_socket}" || local _es=4
+            (( _i++ ))
         done
     fi
     return ${_es:-0}
 }
 
 
-session_open() {
-    # Open a new ControlMaster
-    local _error _es _host
-    _host=${1}
-    if session_check ${_host} &> /dev/null
-    then
-        {
-            echo "${_host} - ControlMaster connection already open"
-            session_check ${_host} | tail -n 1
-        } 1>&2
-    else
-        echo "${_host} - Opening ControlMaster connection"
-        # ssh -f option does not work in subshell or list :(
-        # ssh -y option used (if in ${log_opt}) so that misc connection errors
-        #   do not clutter terminals
-        if ssh -f -N ${log_opt:-}${_host}
-        then
-            session_check ${_host} | tail -n 1
-        else
-            _es=${?}
-            if [[ -n "${syslog:-}" ]]
-            then
-                _error=$(grep -F ' ssh: ' ${syslog} | tail -n 1)
-                echo "ERROR: ${_error#*error:}" 1>&2
-            fi
-            return ${_es}
-        fi
-    fi
-    return 0
-}
-
-
-session_open_all() {
-    # open ALL ControlMaster hosts from SSH config
-    local _host _i
-    _i=0
-    for _host in ${configured_hosts}
-    do
-        (( _i > 0 )) && echo
-        session_open ${_host} || true
-        _i=$(( ++_i ))
-    done
-    return 0
+set_control_path_based_globals() {
+    # Set global variables based on ControlPath
+    local _control_path="$(config_control_path)"
+    CONTROL_GLOB=${_control_path//%?/*}
+    HOST_REGEX=${_control_path//%h/(.*)}
+    HOST_REGEX=${HOST_REGEX//%?/.*}
+    HOST_REGEX=${HOST_REGEX//\~/~}
 }
 
 
@@ -322,33 +254,20 @@ socket_clean() {
 
 sockets_display() {
     # List ControlMaster connections sockets found in ~/.ssh
-    local _check _es _first _host _socket _sockets
+    local _sockets=$(sockets_list)
     # find sockets
-    _sockets=$(sockets_list)
     if [[ -z "${_sockets}" ]]
     then
         echo 'No ControlMaster connection sockets found.' 1>&2
         exit 0
     else
-        _i=0
+        local _i=0
         for _socket in ${_sockets}
         do
-            _host=$(host_from_socket "${_socket}")
-            if session_check "${_host}" "${_socket}" &> /dev/null
-            then
-                if (( _i > 0 ))
-                then
-                    echo
-                fi
-                _check=$(session_check "${_host}" "${_socket}" | tail -n 1)
-                echo "${_host}"
-                echo "${_check}"
-                echo "  Socket: ${_socket}"
-            else
-                socket_clean ${_socket}
-                _es=3
-            fi
-            _i=$(( _i + 1 ))
+            (( _i > 0 )) && echo
+            local _host=$(host_from_socket "${_socket}")
+            session_check_host "${_host}" "${_socket}" || local _es=3
+            (( _i++ ))
         done
     fi
     exit ${_es:-0}
@@ -358,7 +277,7 @@ sockets_display() {
 sockets_list() {
     # list ControlMaster connection sockets in ControlPath
     local _socket
-    for _socket in $(eval echo ${control_glob})
+    for _socket in $(eval echo ${CONTROL_GLOB})
     do
         [[ -S "${_socket}" ]] || continue
         echo "${_socket}"
@@ -367,81 +286,101 @@ sockets_list() {
 }
 
 
+strip_clean() {
+    # Strip
+    # - all control characters
+    # - leading whitespace
+    # - trailing whitespace
+    echo "${1}" | sed \
+        -e's/[[:cntrl:]]*//g' \
+        -e's/^[[:space:]]*//' \
+        -e's/[[:space:]]*$//'
+}
+
+
 #### MAIN #####################################################################
 
 
 #### Parse options
-help_request_check "${@:-}"
 (( ${#} == 0 )) && help_print 2
-while getopts ':Ac:LlOo:Xx:' Option
+while [[ -n "${1:-}" ]]
 do
-    case ${Option} in
-        c ) action_check_set 'check'
-            hosts="${hosts:-} ${OPTARG}"
+    case "${1}" in
+        -[Hh] | --[Hh][Ee][Ll][Pp] | [Hh][Ee][Ll][Pp] )
+            shift
+            help_print
             ;;
-        L ) action_check_set 'conf_list' ;;
-        l ) action_check_set 'sockets' ;;
-        O | A ) action_check_set 'open_all' ;;
-        o ) action_check_set 'open'
-            hosts="${hosts:-} ${OPTARG}"
+        -c* )
+            flag=${1:0:2}
+            if (( ${#1} > 2 ))
+            then
+                HOSTS+=(${1:2})
+                shift
+            else
+                HOSTS+=(${2})
+                shift
+                shift
+            fi
+            action_check_set 'check' "${flag}"
             ;;
-        X ) action_check_set 'exit_all' ;;
-        x ) action_check_set 'exit'
-            hosts="${hosts:-} ${OPTARG}"
+        -l )
+            action_check_set 'sockets' "${1}"
+            shift
+            ;;
+        -X )
+            action_check_set 'exit_all' "${1}"
+            shift
+            ;;
+        -x* )
+            flag=${1:0:2}
+            if (( ${#1} > 2 ))
+            then
+                HOSTS+=(${1:2})
+                shift
+            else
+                HOSTS+=(${2})
+                shift
+                shift
+            fi
+            action_check_set 'exit' "${flag}"
+            ;;
+        --no-color | -no-color )
+            shift
+            DKG=''
+            RST=''
+            WHT=''
             ;;
         * )
-            if [[ "${OPTARG}" =~ ^[cox]$ ]]
-            then
-                error_exit "option '-${OPTARG}' requires HOST argument" 2
-            fi
-            error_exit "Invalid option: -${OPTARG}" 2
+            error_exit "Invalid option: ${1}" 2
             ;;
     esac
 done
-shift $((${OPTIND} - 1))
 
-configured_hosts=$(config_hosts_list)
-control_path="$(config_control_path)"
-control_glob=${control_path//%?/*}
-host_regex=${control_path//%h/(.*)}
-host_regex=${host_regex//%?/.*}
-host_regex=${host_regex//\~/~}
-case "${action:-}" in
+set_control_path_based_globals
+case "${ACTION:-}" in
     # Check HOST ControlMaster connection status
     'check' )
-        for _host in ${hosts}
+        _i=0
+        for _host in ${HOSTS[@]}
         do
-            session_check ${_host}
+            (( _i > 0 )) && echo
+            session_check_host "${_host}"
+            (( _i++ ))
         done
         ;;
     # Exit HOST ControlMaster connection
     'exit' )
-        for _host in ${hosts}
+        _i=0
+        for _host in ${HOSTS[@]}
         do
-            if session_check ${_host} &> /dev/null
-            then
-                session_exit ${_host}
-            fi
+            (( _i > 0 )) && echo
+            session_exit "${_host}"
+            (( _i++ ))
         done
         ;;
     # Exit all ControlMaster connections with sockets in ~/.ssh/
     'exit_all' )
         session_exit_all || exit ${?}
-        ;;
-    # List ControlMasters defined in ${ssh_config}
-    'conf_list')
-        echo "${configured_hosts}"
-        ;;
-    # Open HOST ControlMaster connection (Default)
-    'open' )
-        for _host in ${hosts}
-        do
-            session_open ${_host}
-        done
-        ;;
-    # Open all ControlMasters defined in ${ssh_config}
-    'open_all' )
-        session_open_all
         ;;
     # List ControlMaster connection sockets in ~/.ssh/
     'sockets' )
