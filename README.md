@@ -95,18 +95,23 @@ See [`docs/annotated_config`][annotated].
 
 ### Related
 
-- [mac-ssh-confirm][confirm]: Protect against SSH Agent Hijacking on macOS with
-  the ability to confirm agent identities prior to each use
-- [gacli][gacli]: Mac CLI Google Authenticator client (ex. for use with SSH
-  Bastions that utilize Google Authenticator or TOTP tokens)
+- any \*nix Operating Systems (including Linux and macOS):
+  - [gacli][gacli]: Mac CLI Google Authenticator client (ex. for use with SSH
+    Bastions that utilize Google Authenticator or TOTP tokens)
+  - **[solo-agent][soloagent]**: Enable discrete SSH Agents to avoid leaking
+    access across hosts 
+- macOS only
+  - [mac-ssh-confirm][confirm]: Protect against SSH Agent Hijacking on macOS
+    with the ability to confirm agent identities prior to each use
 
-[confirm]:https://github.com/TimZehta/mac-ssh-confirm
 [gacli]:https://github.com/ClockworkNet/gacli
+[soloagent]:https://github.com/TimidRobot/solo-agent
+[confirm]:https://github.com/TimZehta/mac-ssh-confirm
 
 
 ## Requirements
 
-- \*nix Operating System with
+- any \*nix Operating System (including Linux and macOS) with
   - core utilities (`awk`, `find`, `grep`, `ps`, and `sed`)
   - GNU Bourne-Again Shell 3.0 or later (`bash`)
   - OpenSSH 4.0 or later (`ssh`)
