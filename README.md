@@ -109,6 +109,11 @@ See [`docs/annotated_config`][annotated].
   - core utilities (`awk`, `find`, `grep`, `ps`, and `sed`)
   - GNU Bourne-Again Shell 3.0 or later (`bash`)
   - OpenSSH 4.0 or later (`ssh`)
+    - Current versions of cmc assume OpenSSH 5.6 or later. With earlier
+      versions of OpenSSH, you might be better served by [cmc 1.0.3][cmc103].
+
+
+[cmc103]:https://github.com/TimidRobot/cmc/tree/1.0.3
 
 
 ## Supported By
