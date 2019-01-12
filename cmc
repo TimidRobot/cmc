@@ -198,6 +198,7 @@ session_check() {
         fi
         if [[ -S "${_socket}" ]]
         then
+            echo CLEAN
             socket_clean "${_socket}"
         fi
         return ${_es}
@@ -221,36 +222,37 @@ session_exit() {
     fi
     echo "${WHT}${_host}${RST}"
     echo '  Closing ControlMaster connection'
-    _result="$(ssh -O exit "${_host}" 2>&1 || exit ${?})" \
-        || _es="${?}"
-    _result=$(strip_clean "${_result}")
+    _result="$(ssh -O exit "${_host}" 2>&1)"
+    _result=$(strip_clean "${_result}" || true)
     echo "  ${_result}"
-    return "${_es:-0}"
 }
 
 
 session_all_exit() {
     # Exit ALL ControlMaster with connection sockets in ~/.ssh/
     local _host _result _sockets
-    local -i _es
+    local -i _es _estat
     _sockets=$(sockets_list)
     if [[ -z "${_sockets}" ]]
     then
         error_exit 'no ControlMaster connection sharing sockets found'
     else
-        local _i=0
+        _i=0
         for _socket in ${_sockets}
         do
+            _estat=0
             (( _i > 0 )) && echo
             _host=$(host_from_socket "${_socket}")
-            _result=$(session_exit "${_host}") || _es=4
+            _result=$(session_exit "${_host}") || _estat=4
+            _es="${_estat}"
             if [[ "${_result}" == 'BREAK' ]]
             then
                 break
-            else
-                (( ${_es:-0} == 0 )) && [[ -n "${_result}" ]] && \
+            elif [[ "${_result}" != 'CLEAN' ]]
+            then
+                (( ${_estat:-0} == 0 )) && [[ -n "${_result}" ]] && \
                     echo "${_result}"
-                warn_no_socket "${_host}" "${_es:-0}"
+                (( _estat == 0 )) || warn_no_socket "${_host}"
             fi
             (( _i++ ))
         done
@@ -277,9 +279,8 @@ socket_clean() {
     {
         echo "${YLW}WARNING: stale ControlMaster connection socket${RST}"
         echo "  Removing: ${_socket}"
-        rm -f "${_socket}"
     } 1>&2
-    return 0
+    rm -f "${_socket}"
 }
 
 
@@ -292,7 +293,7 @@ sockets_display() {
     if [[ -z "${_sockets}" ]]
     then
         echo 'No ControlMaster connection sockets found.' 1>&2
-        exit 0
+        return 0
     else
         _i=0
         for _socket in ${_sockets}
@@ -304,13 +305,14 @@ sockets_display() {
             if [[ "${_result}" == 'BREAK' ]]
             then
                 break
-            else
+            elif [[ "${_result}" != 'CLEAN' ]]
+            then
                 echo "${_result}"
             fi
             (( _i++ ))
         done
     fi
-    exit ${_es:-0}
+    return "${_es}"
 }
 
 
@@ -340,7 +342,6 @@ strip_clean() {
 
 warn_no_socket() {
     local _host
-    ES="${1:${?}}"
     _host=${1}
     echo "${YLW}WARNING: no control socket found for host: ${_host}${RST}"
 }
@@ -414,15 +415,18 @@ case "${ACTION:-}" in
         for _host in "${HOSTS[@]}"
         do
             (( _i > 0 )) && echo
-            result=$(host_check_session "${_host}") || exit_status=${?}
+            declare -i estat
+            result=$(host_check_session "${_host}") || estat="${?}"
+            ES="${estat}"
             if [[ "${result}" == 'BREAK' ]]
             then
                 break
-            else
+            elif [[ "${result}" != 'CLEAN' ]]
+            then
                 [[ -n "${result}" ]] && echo "${result}"
-                warn_no_socket "${_host}" "${exit_status:-0}"
+                (( estat == 0 )) || warn_no_socket "${_host}"
             fi
-            unset exit_status result
+            unset estat result
             (( _i++ ))
         done
         ;;
@@ -432,26 +436,28 @@ case "${ACTION:-}" in
         for _host in "${HOSTS[@]}"
         do
             (( _i > 0 )) && echo
-            result=$(session_exit "${_host}") || exit_status=${?}
+            declare -i estat
+            result=$(session_exit "${_host}") || estat="${?}"
+            ES="${estat}"
             if [[ "${result}" == 'BREAK' ]]
             then
                 break
-            else
-                (( ${exit_status:-0} == 0 )) && [[ -n "${result}" ]] && \
-                    echo "${result}"
-                warn_no_socket "${_host}" "${exit_status:-0}"
+            elif [[ "${result}" != 'CLEAN' ]]
+            then
+                [[ -n "${result}" ]] && echo "${result}"
+                (( estat == 0 )) || warn_no_socket "${_host}"
             fi
-            unset exit_status result
+            unset estat result
             (( _i++ ))
         done
         ;;
     # Exit all ControlMaster connections with sockets in ~/.ssh/
     'exit_all' )
-        session_all_exit || exit ${?}
+        session_all_exit || ES="${?}"
         ;;
     # List ControlMaster connection sockets in ~/.ssh/
     'sockets' )
-        sockets_display || exit ${?}
+        sockets_display || ES="${?}"
         ;;
     *)
         error_exit 'orphaned argument(s)--no options were specified' 2
