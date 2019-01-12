@@ -30,22 +30,15 @@ Options:
 Notes:
     - Any unused sockets in ControlPath are removed with -l and -X
 "
+ES=0
 HOSTS=()
 SSH_CONFIG=~/.ssh/config
-SYSLOG_LINUX=/var/log/syslog
-SYSLOG_DARWIN=/private/var/log/system.log
-if [[ -f ${SYSLOG_LINUX} ]]
-then
-    syslog=${SYSLOG_LINUX}
-    log_opt='-y '
-elif [[ -f ${SYSLOG_DARWIN} ]]
-then
-    syslog=${SYSLOG_DARWIN}
-    log_opt='-y '
-fi
+# Colors
 DKG=$(printf '\e[90m')
+RED=$(printf '\e[91m')
 RST=$(printf '\e[0m')
 WHT=$(printf '\e[97m')
+YLW=$(printf '\e[93m')
 
 
 #### FUNCTIONS ################################################################
@@ -82,13 +75,13 @@ config_control_path() {
         local _result_count=$(echo "${_result}" | sort -u | wc -l)
         if (( _result_count > 1 ))
         then
-            error_exit "Multiple ControlPaths specified: ${_result}"
+            error_exit "multiple ControlPaths specified: ${_result}"
         fi
         # Create Path glob from ControlPath
         echo ${_result}
         return 0
     else
-        error_exit "No ControlPath defined in '${SSH_CONFIG}'"
+        error_exit "no ControlPath defined in '${SSH_CONFIG}'"
     fi
 }
 
@@ -97,7 +90,7 @@ error_exit() {
     # Display error message and exit
     local _msg=${1}
     local _es=${2:-1}
-    echo "ERROR: ${_msg}" 1>&2
+    printf "${RED}ERROR: ${_msg}${RST}\n" 1>&2
     exit ${_es}
 }
 
@@ -110,67 +103,11 @@ help_print() {
 }
 
 
-host_from_socket() {
-    # extract host from socket name
-    local _socket="${1}"
-    if [[ "${_socket}" =~ ${HOST_REGEX} ]]
-    then
-        local _hostname="${BASH_REMATCH[1]}"
-        local _host="$(awk \
-            "tolower(\$0) ~ /^[[:space:]]*host[[:space:]]+/ {
-                host=\$2
-            }
-            tolower(\$0) ~ /^[[:space:]]*hostname[[:space:]]+${_hostname}/ {
-                print host
-            }" ${SSH_CONFIG})"
-        if [[ -z "${_host}" ]]
-        then
-            local _host="${_hostname}"
-        fi
-        echo "${_host}"
-    else
-        {
-            echo "WARNING: cannot match host in socket: ${_socket}"
-            echo "         regex pattern: ${HOST_REGEX}"
-        } 1>&2
-        echo 'HOSTNAME'
-    fi
-    return 0
-}
-
-
-session_check() {
-    # Check ControlMaster connection status
-    local _cmd _es _host _opt_socket _pid _result _socket _start
-    _host=${1}
-    _opt_socket=''
-    _socket=${2:-}
-    [[ -n "${_socket}" ]] && _opt_socket="-S ${_socket}"
-    _result=$(ssh ${_opt_socket} -O check ${_host} 2>&1 || exit ${?}) \
-        || _es=${?}
-    _result=$(strip_clean "${_result}")
-    if (( ${_es:-0} != 0 ))
-    then
-        if [[ -z "${_socket}" ]]
-        then
-            _socket="${_result#*(}"
-            _socket="${_socket%)*}"
-        fi
-        if [[ -S "${_socket}" ]]
-        then
-            socket_clean "${_socket}"
-        fi
-        return ${_es}
-    fi
-    echo "${_result}"
-}
-
-
-session_check_host() {
+host_check_session() {
     local _check _cmd _es _host _pid _socket _status
     _host=${1}
     _socket=${2:-}
-    if _check=$(session_check "${_host}" "${_socket}")
+    if _check=$(session_check "${_host}")
     then
         echo "${WHT}${_host}${RST}"
         _pid=${_check%)}
@@ -194,8 +131,70 @@ session_check_host() {
         echo "${DKG}socket:${RST} ${_socket}"
     else
         _es=${?}
+        echo "${_check}"
     fi
     return ${_es:-0}
+}
+
+
+host_from_socket() {
+    # extract host from socket name
+    local _socket="${1}"
+    if [[ "${_socket}" =~ ${HOST_REGEX} ]]
+    then
+        local _hostname="${BASH_REMATCH[1]}"
+        local _host="$(awk \
+            "tolower(\$0) ~ /^[[:space:]]*host[[:space:]]+/ {
+                host=\$2
+            }
+            tolower(\$0) ~ /^[[:space:]]*hostname[[:space:]]+${_hostname}/ {
+                print host
+            }" ${SSH_CONFIG})"
+        if [[ -z "${_host}" ]]
+        then
+            local _host="${_hostname}"
+        fi
+        echo "${_host}"
+    else
+        {
+            echo "${YLW}WARNING: cannot match host from socket name${RST}"
+            echo "  regex pattern: ${HOST_REGEX}"
+            echo "  socket: ${_socket}"
+        } 1>&2
+        echo 'HOSTNAME'
+    fi
+    return 0
+}
+
+
+session_check() {
+    # Check ControlMaster connection status
+    local _cmd _es _host _msg _opt_socket _pid _result _socket _start
+    _host=${1}
+    _socket=${2:-}
+    _result=$(ssh -O check ${_host} 2>&1 || exit ${?}) || _es=${?}
+    _result=$(strip_clean "${_result}")
+    if (( ${_es:-0} != 0 ))
+    then
+        if echo "${_result}" | fgrep -q ': line '
+        then
+            echo BREAK
+            _msg='there appears to be a syntax error in the ssh config:'
+            error_exit "${_msg}${RST}\n${_result}"
+        fi
+        if [[ -z "${_socket}" ]]
+        then
+            # Attempt to parse socket from results
+            _socket="${_result#*(}"
+            _socket="${_socket%)*}"
+        fi
+        if [[ -S "${_socket}" ]]
+        then
+            socket_clean "${_socket}"
+        fi
+        return ${_es}
+    fi
+    echo "${_result}"
 }
 
 
@@ -203,13 +202,17 @@ session_exit() {
     # Exit an existing ControlMaster process
     local _es _host _opt_socket _result _socket
     _host=${1}
-    _opt_socket=''
-    _socket=${2:-}
-    session_check "${_host}" "${_socket}" &> /dev/null || return 0
-    [[ -n "${_socket}" ]] && _opt_socket="-S ${_socket}"
+    if _result=$(session_check "${_host}")
+    then
+        : # success, no-op
+    else
+        _es=${?}
+        echo "${_result}"
+        return ${_es}
+    fi
     echo "${WHT}${_host}${RST}"
     echo '  Closing ControlMaster connection'
-    _result=$(ssh ${_opt_socket} -O exit ${_host} 2>&1 || exit ${?}) \
+    _result=$(ssh -O exit ${_host} 2>&1 || exit ${?}) \
         || _es=${?}
     _result=$(strip_clean "${_result}")
     echo "  ${_result}"
@@ -217,19 +220,27 @@ session_exit() {
 }
 
 
-session_exit_all() {
+session_all_exit() {
     # Exit ALL ControlMaster with connection sockets in ~/.ssh/
     local _sockets=$(sockets_list)
     if [[ -z "${_sockets}" ]]
     then
-        error_exit 'No ControlMaster connection sharing sockets found'
+        error_exit 'no ControlMaster connection sharing sockets found'
     else
         local _i=0
         for _socket in ${_sockets}
         do
             (( _i > 0 )) && echo
             local _host=$(host_from_socket "${_socket}")
-            session_exit "${_host}" "${_socket}" || local _es=4
+            local _result=$(session_exit "${_host}") || local _es=4
+            if [[ "${_result}" == 'BREAK' ]]
+            then
+                break
+            else
+                (( ${_es:-0} == 0 )) && [[ -n "${_result}" ]] && \
+                    echo "${_result}"
+                $(exit ${_es:-0}) || warn_no_socket "${_host}"
+            fi
             (( _i++ ))
         done
     fi
@@ -247,12 +258,17 @@ set_control_path_based_globals() {
 }
 
 
+set_es() {
+    return ${1}
+}
+
+
 socket_clean() {
     # Remove stale socket
     local _socket="${1}"
     {
-        echo 'WARNING: Stale ControlMaster connection socket'
-        echo "         Removing: ${_socket}"
+        echo "${YLW}WARNING: stale ControlMaster connection socket${RST}"
+        echo "  Removing: ${_socket}"
         rm -f "${_socket}"
     } 1>&2
     return 0
@@ -273,7 +289,14 @@ sockets_display() {
         do
             (( _i > 0 )) && echo
             local _host=$(host_from_socket "${_socket}")
-            session_check_host "${_host}" "${_socket}" || local _es=3
+            _result=$(host_check_session "${_host}")
+            _es=${?}
+            if [[ "${_result}" == 'BREAK' ]]
+            then
+                break
+            else
+                echo "${_result}"
+            fi
             (( _i++ ))
         done
     fi
@@ -302,6 +325,13 @@ strip_clean() {
         -e's/[[:cntrl:]]*//g' \
         -e's/^[[:space:]]*//' \
         -e's/[[:space:]]*$//'
+}
+
+
+warn_no_socket() {
+    ES=${?}
+    local _host=${1}
+    echo "${YLW}WARNING: no control socket found for host: ${_host}${RST}"
 }
 
 
@@ -355,10 +385,12 @@ do
             shift
             DKG=''
             RST=''
+            RED=''
             WHT=''
+            YLW=''
             ;;
         * )
-            error_exit "Invalid option: ${1}" 2
+            error_exit "invalid option: ${1}" 2
             ;;
     esac
 done
@@ -371,7 +403,15 @@ case "${ACTION:-}" in
         for _host in ${HOSTS[@]}
         do
             (( _i > 0 )) && echo
-            session_check_host "${_host}"
+            result=$(host_check_session "${_host}") || exit_status=${?}
+            if [[ "${result}" == 'BREAK' ]]
+            then
+                break
+            else
+                [[ -n "${result}" ]] && echo "${result}"
+                $(exit ${exit_status:-0}) || warn_no_socket "${_host}"
+            fi
+            unset exit_status result
             (( _i++ ))
         done
         ;;
@@ -381,13 +421,22 @@ case "${ACTION:-}" in
         for _host in ${HOSTS[@]}
         do
             (( _i > 0 )) && echo
-            session_exit "${_host}"
+            result=$(session_exit "${_host}") || exit_status=${?}
+            if [[ "${result}" == 'BREAK' ]]
+            then
+                break
+            else
+                (( ${exit_status:-0} == 0 )) && [[ -n "${result}" ]] && \
+                    echo "${result}"
+                $(exit ${exit_status:-0}) || warn_no_socket "${_host}"
+            fi
+            unset exit_status result
             (( _i++ ))
         done
         ;;
     # Exit all ControlMaster connections with sockets in ~/.ssh/
     'exit_all' )
-        session_exit_all || exit ${?}
+        session_all_exit || exit ${?}
         ;;
     # List ControlMaster connection sockets in ~/.ssh/
     'sockets' )
@@ -397,3 +446,4 @@ case "${ACTION:-}" in
         error_exit 'orphaned argument(s)--no options were specified' 2
         ;;
  esac
+ exit ${ES}
