@@ -29,6 +29,7 @@ Options:
     -h      show this help message and exit
     -c HOST check HOST ControlMaster connection status (may be specified more
             than once)
+    -d      print debug information
     -l      list all active ControlMaster connection sockets
     -x HOST exit ControlMaster session (may be specified more than once)
     -X      exit all ControlMaster connections with sockets
@@ -149,7 +150,7 @@ host_check_session() {
 
 
 host_from_socket() {
-    # extract host from socket name
+    # Extract host from socket name
     local _host _hostname _socket
     _socket="${1}"
     if [[ "${_socket}" =~ ${HOST_REGEX} ]]
@@ -176,6 +177,15 @@ host_from_socket() {
         echo 'HOSTNAME'
     fi
     return 0
+}
+
+
+print_debug_info() {
+    # Print debug information (from set_control_path_based_globals)
+    echo "${DKG}CONTROL_PATH:${RST} ${CONTROL_PATH}"
+    echo
+    echo "${DKG}CONTROL_GLOB:${RST} ${CONTROL_GLOB}"
+    echo "${DKG}  HOST_REGEX:${RST} ${HOST_REGEX}"
 }
 
 
@@ -268,10 +278,10 @@ session_all_exit() {
 
 set_control_path_based_globals() {
     # Set global variables based on ControlPath
-    local _control_path
-    _control_path="$(config_control_path)"
-    CONTROL_GLOB=${_control_path//%?/*}
-    HOST_REGEX=${_control_path//%h/(.*)}
+    CONTROL_PATH="$(config_control_path)"
+    CONTROL_GLOB=${CONTROL_PATH//%?/*}
+    CONTROL_GLOB=${CONTROL_GLOB/\~/${HOME}}
+    HOST_REGEX=${CONTROL_PATH//%h/(.*)}
     HOST_REGEX=${HOST_REGEX//%?/.*}
     HOST_REGEX=${HOST_REGEX//\~/~}
 }
@@ -334,7 +344,7 @@ sockets_list() {
 
 
 strip_clean() {
-    # Strip
+    # Strip:
     # - all control characters
     # - leading whitespace
     # - trailing whitespace
@@ -376,6 +386,10 @@ do
                 shift
             fi
             action_check_set 'check' "${flag}"
+            ;;
+        -d )
+            action_check_set 'debug' "${1}"
+            shift
             ;;
         -l )
             action_check_set 'sockets' "${1}"
@@ -434,6 +448,10 @@ case "${ACTION:-}" in
             unset estat result
             (( _i++ ))
         done
+        ;;
+    # Debug - print information
+    'debug' )
+        print_debug_info
         ;;
     # Exit HOST ControlMaster connection
     'exit' )
