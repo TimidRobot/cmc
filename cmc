@@ -119,7 +119,7 @@ host_check_session() {
     local -i _es
     _host=${1}
     _socket=${2:-}
-    if _check=$(session_check "${_host}")
+    if _check=$(session_check "${_host}" || exit ${?})
     then
         echo "${WHT}${_host}${RST}"
         _pid="${_check%)}"
@@ -227,7 +227,7 @@ session_exit() {
     local _host _result _socket
     local -i _es
     _host="${1}"
-    if _result=$(session_check "${_host}")
+    if _result=$(session_check "${_host}" || exit ${?})
     then
         : # success, no-op
     else
@@ -296,6 +296,7 @@ socket_clean() {
         echo "  Removing: ${_socket}"
     } 1>&2
     rm -f "${_socket}"
+    return 0
 }
 
 
@@ -315,7 +316,7 @@ sockets_display() {
         do
             (( _i > 0 )) && echo
             _host=$(host_from_socket "${_socket}")
-            _result=$(host_check_session "${_host}")
+            _result=$(host_check_session "${_host}" || exit ${?})
             _es=${?}
             if [[ "${_result}" == 'BREAK' ]]
             then
@@ -435,7 +436,7 @@ case "${ACTION:-}" in
         do
             (( _i > 0 )) && echo
             declare -i estat
-            result=$(host_check_session "${_host}") || estat="${?}"
+            result=$(host_check_session "${_host}" || exit ${?}) || estat=${?}
             ES="${estat}"
             if [[ "${result}" == 'BREAK' ]]
             then
@@ -460,7 +461,7 @@ case "${ACTION:-}" in
         do
             (( _i > 0 )) && echo
             declare -i estat
-            result=$(session_exit "${_host}") || estat="${?}"
+            result=$(session_exit "${_host}" || exit ${?}) || estat=${?}
             ES="${estat}"
             if [[ "${result}" == 'BREAK' ]]
             then
