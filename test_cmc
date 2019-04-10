@@ -1,0 +1,110 @@
+#!/bin/bash
+set -o errexit
+set -o errtrace
+set -o nounset
+
+trap '_es=${?};
+    printf "${0}: line ${LINENO}: \"${BASH_COMMAND}\"";
+    printf " exited with a status of ${_es}\n";
+    exit ${_es}' ERR 
+
+TESTHOST=${1}
+
+
+echo 'Show Debug information'
+echo '======================'
+./cmc -d
+echo
+echo
+
+
+echo 'Verify syntax'
+echo '============='
+shellcheck cmc
+echo
+echo
+
+
+HEAD="Verify \`-c ${TESTHOST}\` check HOST ControlMaster connection status"
+echo "${HEAD}"
+echo "${HEAD//?/=}"
+echo "1. Establish a connection to ${TESTHOST}"
+ssh -o ClearAllForwardings=yes -o ControlPersist=5m -o VisualHostKey=no \
+    ${TESTHOST} exit 0
+echo
+echo "2. Check ${TESTHOST} with active socket"
+./cmc -c ${TESTHOST}
+echo
+PID=$(./cmc -c ${TESTHOST} | awk '/pid:/ {print $2}')
+echo "3. Send ALRM signal to PID ${PID} leave a stale socket"
+kill -14 ${PID}
+echo
+echo "4. Check ${TESTHOST} with stale socket"
+./cmc -c ${TESTHOST} || true
+echo
+echo
+
+
+echo 'Verify `-l` list all active ControlMaster connection sockets'
+echo '============================================================'
+echo "1. Establish a connection to ${TESTHOST}"
+ssh -o ClearAllForwardings=yes -o ControlPersist=5m -o VisualHostKey=no \
+    ${TESTHOST} exit 0
+echo
+echo '2. List all with active socket'
+./cmc -l
+echo
+PID=$(./cmc -c ${TESTHOST} | awk '/pid:/ {print $2}')
+echo "3. Send ALRM signal to PID ${PID} leave a stale socket"
+kill -14 ${PID}
+echo
+echo '4. List all with stale socket'
+./cmc -l || true
+echo
+echo
+
+
+HEAD="Verify \`-x ${TESTHOST}\` exit ControlMaster session"
+echo "${HEAD}"
+echo "${HEAD//?/=}"
+echo "1. Establish a connection to ${TESTHOST}"
+ssh -o ClearAllForwardings=yes -o ControlPersist=5m -o VisualHostKey=no \
+    ${TESTHOST} exit 0
+echo
+echo "2. Exit ${TESTHOST} with active socket"
+./cmc -x ${TESTHOST}
+echo
+echo "3. Establish a connection to ${TESTHOST}"
+ssh -o ClearAllForwardings=yes -o ControlPersist=5m -o VisualHostKey=no \
+    ${TESTHOST} exit 0
+echo
+PID=$(./cmc -c ${TESTHOST} | awk '/pid:/ {print $2}')
+echo "4. Send ALRM signal to PID ${PID} leave a stale socket"
+kill -14 ${PID}
+echo
+echo "5. Exit ${TESTHOST} with stale socket"
+./cmc -x ${TESTHOST} || true
+echo
+echo
+
+
+echo 'Verify `-X` exit all ControlMaster connections with sockets'
+echo '==========================================================='
+echo "1. Establish a connection to ${TESTHOST}"
+ssh -o ClearAllForwardings=yes -o ControlPersist=5m -o VisualHostKey=no \
+    ${TESTHOST} exit 0
+echo
+echo '2. Exit all with active socket'
+./cmc -X
+echo
+echo "3. Establish a connection to ${TESTHOST}"
+ssh -o ClearAllForwardings=yes -o ControlPersist=5m -o VisualHostKey=no \
+    ${TESTHOST} exit 0
+echo
+PID=$(./cmc -c ${TESTHOST} | awk '/pid:/ {print $2}')
+echo "4. Send ALRM signal to PID ${PID} leave a stale socket"
+kill -14 ${PID}
+echo
+echo '5. Exit all with stale socket'
+./cmc -X || true
+echo
