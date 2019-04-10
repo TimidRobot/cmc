@@ -28,6 +28,7 @@ Options:
     -h      show this help message and exit
     -c HOST check HOST ControlMaster connection status (may be specified more
             than once)
+    -d      print debug information
     -l      list all active ControlMaster connection sockets
     -x HOST exit ControlMaster session (may be specified more than once)
     -X      exit all ControlMaster connections with sockets
@@ -35,6 +36,7 @@ Options:
 Notes:
     - Any unused sockets in ControlPath are removed with -l and -X
 ```
+(output of `cmc -h`)
 
 
 ## Install
@@ -55,7 +57,7 @@ you can simply download it and ensure it is in your `PATH`.
 If this utility is helpful for you, please star this project so that it can
 eventually be included in Homebrew proper. Thank you!
 
-[brewinstall]:http://brew.sh/#install
+[brewinstall]: http://brew.sh/#install
 
 
 ## Documentation
@@ -69,22 +71,22 @@ ControlMaster connections.
 
 For more information on `ControlPersist` see [ssh_config(5)][mansshconfig].
 
-[openssh56]:https://www.openssh.com/txt/release-5.6
-[mansshconfig]:http://man.openbsd.org/OpenBSD-current/man5/ssh_config.5
+[openssh56]: https://www.openssh.com/txt/release-5.6
+[mansshconfig]: http://man.openbsd.org/OpenBSD-current/man5/ssh_config.5
 
 
 ### Workflow
 
 See [`docs/workflow`][workflow].
 
-[workflow]:docs/workflow.md
+[workflow]: docs/workflow.md
 
 
 ### Annotated SSH Configuration
 
 See [`docs/annotated_config`][annotated].
 
-[annotated]:docs/annotated_config.md
+[annotated]: docs/annotated_config.md
 
 
 ### Related
@@ -98,9 +100,9 @@ See [`docs/annotated_config`][annotated].
   - [mac-ssh-confirm][confirm]: Protect against SSH Agent Hijacking on macOS
     with the ability to confirm agent identities prior to each use
 
-[gacli]:https://github.com/ClockworkNet/gacli
-[soloagent]:https://github.com/TimidRobot/solo-agent
-[confirm]:https://github.com/TimZehta/mac-ssh-confirm
+[gacli]: https://github.com/ClockworkNet/gacli
+[soloagent]: https://github.com/TimidRobot/solo-agent
+[confirm]: https://github.com/TimZehta/mac-ssh-confirm
 
 
 ## Requirements
@@ -108,12 +110,20 @@ See [`docs/annotated_config`][annotated].
 - any \*nix Operating System (including Linux and macOS) with:
   - core utilities (`awk`, `find`, `grep`, `ps`, and `sed`)
   - GNU Bourne-Again Shell 3.0 or later (`bash`)
-  - OpenSSH 4.0 or later (`ssh`)
-    - Current versions of cmc assume OpenSSH 5.6 or later. With earlier
-      versions of OpenSSH, you might be better served by [cmc 1.0.3][cmc103].
-
+  - OpenSSH 5.6 or later (`ssh`)
+    - For OpenSSH versions between 4.0 and 5.6, try [cmc 1.0.3][cmc103]
 
 [cmc103]:https://github.com/TimidRobot/cmc/tree/1.0.3
+
+
+## Development
+
+Run `./testcmc TESTHOST` prior to signing a new release.
+
+Thank you:
+- [shellcheck][shellcheck] - a static analysis tool for shell
+
+[shellcheck]: https://github.com/koalaman/shellcheck
 
 
 ## Supported By
