@@ -182,6 +182,9 @@ host_from_socket() {
 
 print_debug_info() {
     # Print debug information (from set_control_path_based_globals)
+    echo "${DKG}   BASH_PATH:${RST} ${BASH}"
+    echo "${DKG}BASH_VERSION:${RST} $(${BASH} --version | head -n1)"
+    echo
     echo "${DKG}CONTROL_PATH:${RST} ${CONTROL_PATH}"
     echo
     echo "${DKG}CONTROL_GLOB:${RST} ${CONTROL_GLOB}"
