@@ -102,7 +102,7 @@ See [`docs/annotated_config`][annotated].
 
 [gacli]: https://github.com/ClockworkNet/gacli
 [soloagent]: https://github.com/TimidRobot/solo-agent
-[confirm]: https://github.com/TimZehta/mac-ssh-confirm
+[confirm]: https://github.com/TimidRobot/mac-ssh-confirm
 
 
 ## Requirements
