@@ -126,14 +126,6 @@ Thank you:
 [shellcheck]: https://github.com/koalaman/shellcheck
 
 
-## Supported By
-
-Portions of the development of this project (and the supporting tap) were
-supported by [ClockworkNet][Clockwork]. Thank you!
-
-[Clockwork]: https://github.com/ClockworkNet
-
-
 ## License
 
 - [`LICENSE`](LICENSE) (Expat/[MIT][mit] License)
