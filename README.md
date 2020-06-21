@@ -100,7 +100,7 @@ See [`docs/annotated_config`][annotated].
   - [mac-ssh-confirm][confirm]: Protect against SSH Agent Hijacking on macOS
     with the ability to confirm agent identities prior to each use
 
-[gacli]: https://github.com/ClockworkNet/gacli
+[gacli]: https://github.com/TimidRobot/gacli
 [soloagent]: https://github.com/TimidRobot/solo-agent
 [confirm]: https://github.com/TimidRobot/mac-ssh-confirm
 
