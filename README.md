@@ -92,8 +92,6 @@ See [`docs/annotated_config`][annotated].
 ### Related
 
 - any \*nix Operating Systems (including Linux and macOS):
-  - [gacli][gacli]: Mac CLI Google Authenticator client (ex. for use with SSH
-    Bastions that utilize Google Authenticator or TOTP tokens)
   - **[solo-agent][soloagent]**: Enable discrete SSH Agents to avoid leaking
     access across hosts 
 - macOS only
