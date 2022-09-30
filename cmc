@@ -156,11 +156,13 @@ host_from_socket() {
     if [[ "${_socket}" =~ ${HOST_REGEX} ]]
     then
         _hostname="${BASH_REMATCH[1]}"
+        _hostname_keyword='^[[:space:]]*hostname[[:space:]]+'
+        _arg_term='([[:space:]]|$)'
         _host="$(awk \
             "tolower(\$0) ~ /^[[:space:]]*host[[:space:]]+/ {
                 host=\$2
             }
-            tolower(\$0) ~ /^[[:space:]]*hostname[[:space:]]+${_hostname}/ {
+            tolower(\$0) ~ /${_hostname_keyword}${_hostname}${_arg_term}/ {
                 print host
             }" ${SSH_CONFIG})"
         if [[ -z "${_host}" ]]
