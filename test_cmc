@@ -22,6 +22,7 @@ echo
 echo 'Verify syntax'
 echo '============='
 shellcheck cmc
+echo 'no syntax issues identified'
 echo
 echo
 
