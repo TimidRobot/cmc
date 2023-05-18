@@ -93,7 +93,7 @@ See [`docs/annotated_config`][annotated].
 
 - any \*nix Operating Systems (including Linux and macOS):
   - **[solo-agent][soloagent]**: Enable discrete SSH Agents to avoid leaking
-    access across hosts 
+    access across hosts
 - macOS only
   - [mac-ssh-confirm][confirm]: Protect against SSH Agent Hijacking on macOS
     with the ability to confirm agent identities prior to each use
@@ -116,7 +116,7 @@ See [`docs/annotated_config`][annotated].
 
 ## Development
 
-Run `./testcmc TESTHOST` prior to signing a new release.
+Run `./test_cmc ${TESTHOST}` prior to signing a new release.
 
 Thank you:
 - [shellcheck][shellcheck] - a static analysis tool for shell
