@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # ControlMaster Controller - Eases management of SSH ControlMaster connections
 #
