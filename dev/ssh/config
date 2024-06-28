@@ -1,0 +1,21 @@
+Host dest1
+    User userone
+
+Host dest2
+    Port 2222
+
+Host *
+    AddressFamily inet
+    ControlMaster auto
+    ControlPath ~/ssh_cp_%r_%h
+    ControlPersist 1h
+    HostbasedAuthentication no
+    IdentitiesOnly yes
+    IdentityFile ~/.ssh/rsa_testcmc
+    Preferredauthentications publickey
+    ServerAliveCountMax 60
+    ServerAliveInterval 30
+    StrictHostKeyChecking no
+    TCPKeepAlive no
+
+# vim: ft=sshconfig

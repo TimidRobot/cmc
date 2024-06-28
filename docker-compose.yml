@@ -1,0 +1,100 @@
+# Also see:
+#   Dockerfile
+#
+# https://docs.docker.com/compose/compose-file
+
+services:
+
+  bash3:
+    build:
+      args:
+        BASH_VERSION: 3.2
+      context: .
+      dockerfile: dev/bash/Dockerfile
+    container_name: bash3
+    hostname: bash3
+    restart: on-failure
+    volumes:
+      - './dev/ssh:/home/user/.ssh'
+      - './bin:/home/user/bin'
+
+  bash4:
+    build:
+      args:
+        BASH_VERSION: 4.4
+      context: .
+      dockerfile: dev/bash/Dockerfile
+    container_name: bash4
+    hostname: bash4
+    restart: on-failure
+    volumes:
+      - './dev/ssh:/home/user/.ssh'
+      - './bin:/home/user/bin'
+
+  bash5:
+    build:
+      args:
+        BASH_VERSION: 5.2
+      context: .
+      dockerfile: dev/bash/Dockerfile
+    container_name: bash5
+    hostname: bash5
+    restart: on-failure
+    volumes:
+      - './dev/ssh:/home/user/.ssh'
+      - './bin:/home/user/bin'
+
+  dest1:
+    build:
+      context: .
+      dockerfile: dev/dest/Dockerfile
+    container_name: dest1
+    hostname: dest1
+    environment:
+      SSH_PORT: 22
+    init: true
+    restart: on-failure
+    volumes:
+      - './dev/ssh:/home/userone/.ssh'
+      - './dev/ssh:/home/usertwo/.ssh'
+
+  dest2:
+    build:
+      context: .
+      dockerfile: dev/dest/Dockerfile
+    container_name: dest2
+    hostname: dest2
+    environment:
+      SSH_PORT: 2222
+    init: true
+    restart: on-failure
+    volumes:
+      - './dev/ssh:/home/userone/.ssh'
+      - './dev/ssh:/home/usertwo/.ssh'
+
+
+#    volumes:
+#      # Mount site configuration directory
+#      - './config:/usr/local/apache2/conf/config:ro'
+#      # Mount website directory
+#      - './src:/usr/local/apache2/htdocs:ro'
+#
+#
+#  node:
+#    build:
+#      context: .
+#      dockerfile: dev/node/Dockerfile
+#    # Continue running until shutdown (this allows docker compose exec which is
+#    # much faster than docker compose run)
+#    # Thank you: https://serverfault.com/a/1084975
+#    command: /bin/sh -c "
+#      trap 'exit' TERM;
+#      echo 'Run the following command to format files with Prettier:';
+#      echo '    docker compose exec node prettier --write src/';
+#      while true; do sleep 1; done
+#      "
+#    container_name: cc-search-node
+#    volumes:
+#      # Mount repository to working directory
+#      - './:/opt'
+#    working_dir: /opt
