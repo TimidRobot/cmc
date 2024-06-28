@@ -250,7 +250,7 @@ session_exit() {
 
 session_all_exit() {
     # Exit ALL ControlMaster with connection sockets in ~/.ssh/
-    declare -i _es _estat
+    declare -i _es _estat _i
     local _host _result _sockets
     _sockets=$(sockets_list)
     if [[ -z "${_sockets}" ]]
@@ -274,7 +274,7 @@ session_all_exit() {
                     echo "${_result}"
                 (( _estat == 0 )) || warn_no_socket "${_host}"
             fi
-            (( _i++ ))
+            _i+=1
         done
     fi
     return ${_es:-0}
@@ -330,7 +330,7 @@ sockets_display() {
             then
                 echo "${_result}"
             fi
-            (( _i++ ))
+            _i+=1
         done
     fi
     return "${_es}"
@@ -436,12 +436,13 @@ set_control_path_based_globals
 case "${ACTION:-}" in
     # Check HOST ControlMaster connection status
     'check' )
-        _i=0
+        declare -i _i=0
         for _host in "${HOSTS[@]}"
         do
             (( _i > 0 )) && echo
             declare -i estat
             result=$(host_check_session "${_host}" || exit ${?}) || estat=${?}
+            estat=${?}
             ES="${estat}"
             if [[ "${result}" == 'BREAK' ]]
             then
@@ -452,7 +453,7 @@ case "${ACTION:-}" in
                 (( estat == 0 )) || warn_no_socket "${_host}"
             fi
             unset estat result
-            (( _i++ ))
+            _i+=1
         done
         ;;
     # Debug - print information
@@ -461,7 +462,7 @@ case "${ACTION:-}" in
         ;;
     # Exit HOST ControlMaster connection
     'exit' )
-        _i=0
+        declare -i _i=0
         for _host in "${HOSTS[@]}"
         do
             (( _i > 0 )) && echo
@@ -477,7 +478,7 @@ case "${ACTION:-}" in
                 (( estat == 0 )) || warn_no_socket "${_host}"
             fi
             unset estat result
-            (( _i++ ))
+            _i+=1
         done
         ;;
     # Exit all ControlMaster connections with sockets in ~/.ssh/
