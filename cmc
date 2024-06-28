@@ -236,7 +236,7 @@ session_exit() {
     then
         : # success, no-op
     else
-        _es="${?}"
+        _es=${?}
         echo "${_result}"
         return ${_es}
     fi
@@ -264,7 +264,7 @@ session_all_exit() {
             (( _i > 0 )) && echo
             _host=$(host_from_socket "${_socket}")
             _result=$(session_exit "${_host}") || _estat=4
-            _es="${_estat}"
+            (( estat == 0 )) || _es="${estat}"
             if [[ "${_result}" == 'BREAK' ]]
             then
                 break
