@@ -440,10 +440,9 @@ case "${ACTION:-}" in
         for _host in "${HOSTS[@]}"
         do
             (( _i > 0 )) && echo
-            declare -i estat
+            declare -i estat=0
             result=$(host_check_session "${_host}" || exit ${?}) || estat=${?}
-            estat=${?}
-            ES="${estat}"
+            (( estat == 0 )) || ES="${estat}"
             if [[ "${result}" == 'BREAK' ]]
             then
                 break
@@ -466,9 +465,9 @@ case "${ACTION:-}" in
         for _host in "${HOSTS[@]}"
         do
             (( _i > 0 )) && echo
-            declare -i estat
+            declare -i estat=0
             result=$(session_exit "${_host}" || exit ${?}) || estat=${?}
-            ES="${estat}"
+            (( estat == 0 )) || ES="${estat}"
             if [[ "${result}" == 'BREAK' ]]
             then
                 break
