@@ -9,8 +9,13 @@ trap '_es=${?};
     printf " exited with a status of ${_es}\n";
     exit ${_es}' ERR
 
-TESTHOST=${1}
+TESTHOST=${1:-}
 
+if [[ -z "${TESTHOST}" ]]
+then
+    echo 'ERROR: the TESTHOST argument is required' 1>&2
+    exit 1
+fi
 
 echo 'Show Debug information'
 echo '======================'
